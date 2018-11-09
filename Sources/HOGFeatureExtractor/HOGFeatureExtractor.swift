@@ -109,8 +109,8 @@ public class HOGFeatureExtractor {
         var adder = Double(orientation)
         vDSP_vsmsaD(grad, 1, &multiplier, &adder, &grad, 1, UInt(grad.count)) // [0, 2*orientation]
         
-        var intensity = [Double](repeating: 0, count: gradX.count)
-        vDSP_vdistD(gradX, 1, gradY, 1, &intensity, 1, UInt(intensity.count))
+        var magnitude = [Double](repeating: 0, count: gradX.count)
+        vDSP_vdistD(gradX, 1, gradY, 1, &magnitude, 1, UInt(magnitude.count))
         
         // accumulate to histogram
         var histograms = [Double](repeating: 0, count: numberOfCellY*numberOfCellX*orientation)
@@ -130,10 +130,8 @@ public class HOGFeatureExtractor {
                     directionIndex -= orientation
                 }
                 
-                print(grad[y*width+x], directionIndex)
-                
                 let histogramIndex = (cellY * numberOfCellX + cellX) * orientation
-                histograms[histogramIndex + directionIndex] += intensity[y*width+x]
+                histograms[histogramIndex + directionIndex] += magnitude[y*width+x]
             }
         }
         

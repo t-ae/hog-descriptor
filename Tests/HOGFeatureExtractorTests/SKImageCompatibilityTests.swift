@@ -82,13 +82,12 @@ class SKImageCompatibilityTests: XCTestCase {
     }
     
     func testG() {
-        let f = skimageEquivalent(imageSize: (6, 6),
+        let f = skimageEquivalent(imageSize: (3, 3),
                                   orientations: 5,
                                   pixelsPerCell: (3, 3),
-                                  cellsPerBlock: (2, 2),
+                                  cellsPerBlock: (1, 1),
                                   normalization: .l1)
         
-        print(f.reduce(0, +))
-        XCTAssertEqual(f, size_6_6_ori_5_ppc_3_3_bpc_2_2_L1, accuracy: eps)
+        XCTAssertEqual(f, size_3_3_ori_5_ppc_3_3_bpc_1_1_L1, accuracy: eps)
     }
 }

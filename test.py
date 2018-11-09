@@ -11,7 +11,7 @@ def main():
     parser.add_argument("--pixels-per-cell", nargs=2, type=int)
     parser.add_argument("--cells-per-block", nargs=2, type=int)
     parser.add_argument("--block-norm", type=str, default="L1")
-    
+    parser.add_argument("--debug", action='store_true')
     args = parser.parse_args()
 
     image = np.arange(args.image_size[0]*args.image_size[1])
@@ -19,6 +19,28 @@ def main():
     image = np.abs(image)
     image = image.reshape([args.image_size[1], args.image_size[0]])
     
+    if args.debug:
+        imv = np.zeros_like(image)
+        imh = np.zeros_like(image)
+        imv[1:-1, :] = image[2:, :] - image[:-2, :]
+        imh[:, 1:-1] = image[:, 2:] - image[:, :-2]
+        grad = np.arctan2(imv, imh) * 180 / np.pi
+        
+        print("grad", grad)
+        
+        magnitude = np.hypot(imv, imh)
+        print("magnitude", magnitude)
+        
+       
+        f, im = skimage.feature.hog(image, 
+                                    orientations=args.orientations,
+                                    pixels_per_cell=args.pixels_per_cell, 
+                                    cells_per_block=args.cells_per_block, 
+                                   block_norm=args.block_norm,
+                                   visualize=True)
+        print(im)
+        exit(0)
+
     f = skimage.feature.hog(image, 
                             orientations=args.orientations,
                             pixels_per_cell=args.pixels_per_cell, 
