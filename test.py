@@ -25,6 +25,14 @@ def main():
                             cells_per_block=args.cells_per_block, 
                             block_norm=args.block_norm)
     print(json.dumps(list(f)))
+    print("size_{}_{}_ori_{}_ppc_{}_{}_bpc_{}_{}_{}".format(args.image_size[0], 
+        args.image_size[1], 
+        args.orientations,
+        args.pixels_per_cell[0],
+        args.pixels_per_cell[1],
+        args.cells_per_block[0],
+        args.cells_per_block[1],
+        args.block_norm))
 
 if __name__ == "__main__":
     main()

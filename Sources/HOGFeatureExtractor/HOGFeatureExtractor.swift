@@ -7,8 +7,8 @@ public class HOGFeatureExtractor {
         case l1, l2
     }
     
-    public let pixelsInCell: (x: Int, y: Int)
-    public let cellsInBlock: (x: Int, y: Int)
+    public let pixelsPerCell: (x: Int, y: Int)
+    public let cellsPerBlock: (x: Int, y: Int)
     public let orientation: Int
     
     public let normalization: NormalizationMethod
@@ -17,16 +17,16 @@ public class HOGFeatureExtractor {
     
     /// Create HOGFeatureExtractor.
     /// - Parameters:
-    ///   - pixelsInCell: Size (in pixels) of a cell.
-    ///   - cellsInBlock: Number of cells in each block.
+    ///   - pixelsPerCell: Size (in pixels) of a cell.
+    ///   - cellsPerBlock: Number of cells in each block.
     ///   - orientation: Number of orientation bins. default: 9
     ///   - normalization: Block normalization method. default: .l1
-    public init(pixelsInCell: (x: Int, y: Int),
-                cellsInBlock: (x: Int, y: Int),
+    public init(pixelsPerCell: (x: Int, y: Int),
+                cellsPerBlock: (x: Int, y: Int),
                 orientation: Int = 9,
                 normalization: NormalizationMethod = .l1) {
-        self.pixelsInCell = pixelsInCell
-        self.cellsInBlock = cellsInBlock
+        self.pixelsPerCell = pixelsPerCell
+        self.cellsPerBlock = cellsPerBlock
         self.orientation = orientation
         self.normalization = normalization
     }
@@ -41,8 +41,8 @@ public class HOGFeatureExtractor {
                             blockSpan: Int,
                             orientation: Int = 9,
                             normalization: NormalizationMethod = .l1) {
-        self.init(pixelsInCell: (cellSpan, cellSpan),
-                  cellsInBlock: (blockSpan, blockSpan),
+        self.init(pixelsPerCell: (cellSpan, cellSpan),
+                  cellsPerBlock: (blockSpan, blockSpan),
                   orientation: orientation,
                   normalization: normalization)
     }
@@ -95,8 +95,8 @@ public class HOGFeatureExtractor {
                         width: Int,
                         height: Int) -> [Double] {
         
-        let numberOfCellX = width / pixelsInCell.x
-        let numberOfCellY = height / pixelsInCell.y
+        let numberOfCellX = width / pixelsPerCell.x
+        let numberOfCellY = height / pixelsPerCell.y
         
         // derivatives
         let (gradX, gradY) = derivate(data: data, width: width, height: height)
@@ -115,12 +115,12 @@ public class HOGFeatureExtractor {
         // accumulate to histogram
         var histograms = [Double](repeating: 0, count: numberOfCellY*numberOfCellX*orientation)
         for y in 0..<height {
-            let cellY = y / pixelsInCell.y
+            let cellY = y / pixelsPerCell.y
             guard cellY < numberOfCellY else {
                 break
             }
             for x in 0..<width {
-                let cellX = x / pixelsInCell.x
+                let cellX = x / pixelsPerCell.x
                 guard cellX < numberOfCellX else {
                     continue
                 }
@@ -130,25 +130,27 @@ public class HOGFeatureExtractor {
                     directionIndex -= orientation
                 }
                 
+                print(grad[y*width+x], directionIndex)
+                
                 let histogramIndex = (cellY * numberOfCellX + cellX) * orientation
                 histograms[histogramIndex + directionIndex] += intensity[y*width+x]
             }
         }
         
         // normalize
-        let numberOfBlocksX = numberOfCellX - cellsInBlock.x + 1
-        let numberOfBlocksY = numberOfCellY - cellsInBlock.y + 1
+        let numberOfBlocksX = numberOfCellX - cellsPerBlock.x + 1
+        let numberOfBlocksY = numberOfCellY - cellsPerBlock.y + 1
         
-        let featureCount = numberOfBlocksY*numberOfBlocksX*cellsInBlock.y*cellsInBlock.x*orientation
+        let featureCount = numberOfBlocksY*numberOfBlocksX*cellsPerBlock.y*cellsPerBlock.x*orientation
         var normalizedHistogram = [Double](repeating: 0, count: featureCount)
         
         for by in 0..<numberOfBlocksY {
             for bx in 0..<numberOfBlocksX {
-                let blockHead = ((by*numberOfBlocksX) + bx) * cellsInBlock.y * cellsInBlock.x * orientation
+                let blockHead = ((by*numberOfBlocksX) + bx) * cellsPerBlock.y * cellsPerBlock.x * orientation
                 
-                for cy in 0..<cellsInBlock.y {
-                    let size = cellsInBlock.x * orientation
-                    let blockRowHead = blockHead + cy * cellsInBlock.x * orientation
+                for cy in 0..<cellsPerBlock.y {
+                    let size = cellsPerBlock.x * orientation
+                    let blockRowHead = blockHead + cy * cellsPerBlock.x * orientation
                     let cellHead = (by + cy) * numberOfCellX * orientation
                     
                     normalizedHistogram.withUnsafeMutableBufferPointer {
@@ -161,7 +163,7 @@ public class HOGFeatureExtractor {
                 
                 normalizedHistogram.withUnsafeMutableBufferPointer {
                     let head = $0.baseAddress! + blockHead
-                    let size = cellsInBlock.y * cellsInBlock.x * orientation
+                    let size = cellsPerBlock.y * cellsPerBlock.x * orientation
                     switch normalization {
                     case .l1:
                         var sum: Double = 0
