@@ -71,16 +71,11 @@ public class HOGFeatureExtractor {
         yImg.withUnsafeMutableBufferPointer {
             let yImgPtr = $0.baseAddress!
             
-            var dpUp = data
-            var dpDown = data.advanced(by: 2*width)
-            var dst = yImgPtr.advanced(by: width)
-            for _ in 1..<height-1 {
-                vDSP_vsubD(dpUp, 1, dpDown, 1, dst, 1, UInt(width))
-                
-                dpUp += width
-                dpDown += width
-                dst += width
-            }
+            let dpUp = data
+            let dpDown = data.advanced(by: 2*width)
+            let dst = yImgPtr.advanced(by: width)
+            
+            vDSP_vsubD(dpUp, 1, dpDown, 1, dst, 1, UInt(width*(height-2)))
         }
         
         return (xImg, yImg)
