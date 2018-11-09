@@ -110,4 +110,14 @@ class SKImageCompatibilityTests: XCTestCase {
         
         XCTAssertEqual(f, size_16_16_ori_9_ppc_4_4_bpc_3_3_L2, accuracy: eps)
     }
+    
+    func testJ() {
+        let f = skimageEquivalent(imageSize: (16, 16),
+                                  orientations: 9,
+                                  pixelsPerCell: (4, 4),
+                                  cellsPerBlock: (3, 3),
+                                  normalization: .l1sqrt)
+        
+        XCTAssertEqual(f, size_16_16_ori_9_ppc_4_4_bpc_3_3_L1_sqrt, accuracy: eps)
+    }
 }

@@ -32,6 +32,7 @@
 		A7C0B6FE2195CDF50063F55C /* G.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B6FD2195CDF50063F55C /* G.swift */; };
 		A7C0B7022195DD1B0063F55C /* H.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B7012195DD1B0063F55C /* H.swift */; };
 		A7C0B7042195EB2B0063F55C /* I.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B7032195EB2B0063F55C /* I.swift */; };
+		A7C0B7062195F31A0063F55C /* J.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B7052195F31A0063F55C /* J.swift */; };
 		OBJ_22 /* HOGFeatureExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* HOGFeatureExtractor.swift */; };
 		OBJ_29 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
 		OBJ_40 /* HOGFeatureExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* HOGFeatureExtractorTests.swift */; };
@@ -68,6 +69,7 @@
 		A7C0B6FD2195CDF50063F55C /* G.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = G.swift; sourceTree = "<group>"; };
 		A7C0B7012195DD1B0063F55C /* H.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = H.swift; sourceTree = "<group>"; };
 		A7C0B7032195EB2B0063F55C /* I.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = I.swift; sourceTree = "<group>"; };
+		A7C0B7052195F31A0063F55C /* J.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = J.swift; sourceTree = "<group>"; };
 		"HOGFeatureExtractor::HOGFeatureExtractor::Product" /* HOGFeatureExtractor.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = HOGFeatureExtractor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"HOGFeatureExtractor::HOGFeatureExtractorTests::Product" /* HOGFeatureExtractorTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = HOGFeatureExtractorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_12 /* HOGFeatureExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HOGFeatureExtractorTests.swift; sourceTree = "<group>"; };
@@ -107,6 +109,7 @@
 				A7C0B6FD2195CDF50063F55C /* G.swift */,
 				A7C0B7012195DD1B0063F55C /* H.swift */,
 				A7C0B7032195EB2B0063F55C /* I.swift */,
+				A7C0B7052195F31A0063F55C /* J.swift */,
 			);
 			path = SKImageOutput;
 			sourceTree = "<group>";
@@ -280,6 +283,7 @@
 				A7C0B6FA219577550063F55C /* F.swift in Sources */,
 				A7C0B6F6219575730063F55C /* D.swift in Sources */,
 				A7C0B6ED21956FDB0063F55C /* XCTAssert+Array.swift in Sources */,
+				A7C0B7062195F31A0063F55C /* J.swift in Sources */,
 				A7C0B6E821956C760063F55C /* SKImageCompatibilityTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
