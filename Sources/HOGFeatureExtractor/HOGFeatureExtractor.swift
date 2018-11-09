@@ -50,9 +50,8 @@ public class HOGFeatureExtractor {
     private func derivate(data: UnsafePointer<Double>, width: Int, height: Int) -> (x: [Double], y: [Double]) {
         // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hog.py#L23-L44
         
-        var xImg = [Double](repeating: 0, count: width*height)
-        
-        xImg.withUnsafeMutableBufferPointer {
+        var gradX = [Double](repeating: 0, count: width*height)
+        gradX.withUnsafeMutableBufferPointer {
             let xImgPtr = $0.baseAddress!
             
             var dpLeft = data
@@ -67,8 +66,8 @@ public class HOGFeatureExtractor {
             }
         }
         
-        var yImg = [Double](repeating: 0, count: width*height)
-        yImg.withUnsafeMutableBufferPointer {
+        var gradY = [Double](repeating: 0, count: width*height)
+        gradY.withUnsafeMutableBufferPointer {
             let yImgPtr = $0.baseAddress!
             
             let dpUp = data
@@ -78,7 +77,7 @@ public class HOGFeatureExtractor {
             vDSP_vsubD(dpUp, 1, dpDown, 1, dst, 1, UInt(width*(height-2)))
         }
         
-        return (xImg, yImg)
+        return (gradX, gradY)
     }
     
     /// Extract HOG Feature from gray scale image.
@@ -96,13 +95,15 @@ public class HOGFeatureExtractor {
         // derivatives
         let (gradX, gradY) = derivate(data: data, width: width, height: height)
         
-        // calculate gradient directions and intensities
+        // calculate gradient directions and magnitudes
         var grad = [Double](repeating: 0, count: gradX.count)
-        var _cnt = Int32(grad.count)
-        vvatan2(&grad, gradY, gradX, &_cnt) // [-pi, pi]
-        var multiplier = Double(orientation) / .pi
-        var adder = Double(orientation)
-        vDSP_vsmsaD(grad, 1, &multiplier, &adder, &grad, 1, UInt(grad.count)) // [0, 2*orientation]
+        do {
+            var _cnt = Int32(grad.count)
+            vvatan2(&grad, gradY, gradX, &_cnt) // [-pi, pi]
+            var multiplier = Double(orientation) / .pi
+            var adder = Double(orientation)
+            vDSP_vsmsaD(grad, 1, &multiplier, &adder, &grad, 1, UInt(grad.count)) // [0, 2*orientation]
+        }
         
         var magnitude = [Double](repeating: 0, count: gradX.count)
         vDSP_vdistD(gradX, 1, gradY, 1, &magnitude, 1, UInt(magnitude.count))
