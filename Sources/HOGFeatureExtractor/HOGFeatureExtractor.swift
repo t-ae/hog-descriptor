@@ -4,7 +4,7 @@ import Accelerate
 public class HOGFeatureExtractor {
     
     public enum NormalizationMethod {
-        case l1, l1sqrt, l2
+        case l1, l1sqrt, l2, l2Hys
     }
     
     public let pixelsPerCell: (x: Int, y: Int)
@@ -131,7 +131,7 @@ public class HOGFeatureExtractor {
             }
         }
         
-        if normalization == .l1sqrt {
+        if normalization == .l1sqrt || normalization == .l2Hys {
             // Scale histogram
             // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
             // We don't need this if the normalization method is linear.
@@ -182,6 +182,19 @@ public class HOGFeatureExtractor {
                         vvsqrt(head, head, &_cnt)
                     case .l2:
                         var sum2: Double = 0
+                        vDSP_svesqD(head, 1, &sum2, UInt(size))
+                        sum2 = sqrt(sum2) + eps
+                        vDSP_vsdivD(head, 1, &sum2, head, 1, UInt(size))
+                    case .l2Hys:
+                        var sum2: Double = 0
+                        vDSP_svesqD(head, 1, &sum2, UInt(size))
+                        sum2 = sqrt(sum2) + eps
+                        vDSP_vsdivD(head, 1, &sum2, head, 1, UInt(size))
+                        
+                        var lower = 0.0
+                        var upper = 0.2
+                        vDSP_vclipD(head, 1, &lower, &upper, head, 1, UInt(size))
+                        
                         vDSP_svesqD(head, 1, &sum2, UInt(size))
                         sum2 = sqrt(sum2) + eps
                         vDSP_vsdivD(head, 1, &sum2, head, 1, UInt(size))
