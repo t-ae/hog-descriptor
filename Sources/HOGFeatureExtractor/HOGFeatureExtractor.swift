@@ -104,7 +104,7 @@ public class HOGFeatureExtractor {
         // calculate gradient directions and intensities
         var grad = [Double](repeating: 0, count: gradX.count)
         var _cnt = Int32(grad.count)
-        vvatan2(&grad, gradX, gradY, &_cnt) // [-pi, pi]
+        vvatan2(&grad, gradY, gradX, &_cnt) // [-pi, pi]
         var multiplier = Double(orientation) / .pi
         var adder = Double(orientation)
         vDSP_vsmsaD(grad, 1, &multiplier, &adder, &grad, 1, UInt(grad.count)) // [0, 2*orientation]
