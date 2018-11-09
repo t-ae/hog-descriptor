@@ -1,5 +1,5 @@
 import XCTest
-@testable import HOGFeatureExtractor
+import HOGFeatureExtractor
 
 final class HOGFeatureExtractorTests: XCTestCase {
     func testScaleInvariance() {
@@ -12,9 +12,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
             let f1 = extractor.extract(data: image1, width: 64, height: 64)
             let f2 = extractor.extract(data: image2, width: 64, height: 64)
             
-            for (c1, c2) in zip(f1, f2) {
-                XCTAssertEqual(c1, c2, accuracy: 1e-8)
-            }
+            XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
         do {
             let extractor = HOGFeatureExtractor(cellSpan: 8, blockSpan: 4, orientation: 5, normalization: .l2)
@@ -25,9 +23,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
             let f1 = extractor.extract(data: image1, width: 64, height: 64)
             let f2 = extractor.extract(data: image2, width: 64, height: 64)
             
-            for (c1, c2) in zip(f1, f2) {
-                XCTAssertEqual(c1, c2, accuracy: 1e-5)
-            }
+            XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
     }
     

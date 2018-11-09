@@ -139,7 +139,7 @@ public class HOGFeatureExtractor {
         let numberOfBlocksX = numberOfCellX - cellsInBlock.x + 1
         let numberOfBlocksY = numberOfCellY - cellsInBlock.y + 1
         
-        let featureCount = numberOfBlocksY*numberOfBlocksY*cellsInBlock.y*cellsInBlock.x*orientation
+        let featureCount = numberOfBlocksY*numberOfBlocksX*cellsInBlock.y*cellsInBlock.x*orientation
         var normalizedHistogram = [Double](repeating: 0, count: featureCount)
         
         for by in 0..<numberOfBlocksY {
