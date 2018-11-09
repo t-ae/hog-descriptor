@@ -30,7 +30,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
             }
         }
     }
-
+    
     static var allTests = [
         ("testScaleInvariance", testScaleInvariance),
     ]

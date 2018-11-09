@@ -15,6 +15,12 @@ public class HOGFeatureExtractor {
     
     public let eps = 1e-5
     
+    /// Create HOGFeatureExtractor.
+    /// - Parameters:
+    ///   - pixelsInCell: Size (in pixels) of a cell.
+    ///   - cellsInBlock: Number of cells in each block.
+    ///   - orientation: Number of orientation bins. default: 9
+    ///   - normalization: Block normalization method. default: .l1
     public init(pixelsInCell: (x: Int, y: Int),
                 cellsInBlock: (x: Int, y: Int),
                 orientation: Int = 9,
@@ -25,6 +31,12 @@ public class HOGFeatureExtractor {
         self.normalization = normalization
     }
     
+    /// Create HOGFeatureExtractor.
+    /// - Parameters:
+    ///   - cellSpan: Size (in pixels) of a cell.
+    ///   - blockSpan: Number of cells in each block.
+    ///   - orientation: Number of orientation bins. default: 9
+    ///   - normalization: Block normalization method. default: .l1
     public convenience init(cellSpan: Int,
                             blockSpan: Int,
                             orientation: Int = 9,
@@ -74,6 +86,11 @@ public class HOGFeatureExtractor {
         return (xImg, yImg)
     }
     
+    /// Extract HOG Feature from gray scale image.
+    /// - Parameters:
+    ///   - data: Head of pixel values of gray scale image, row major order.
+    ///   - width: Width of image.
+    ///   - height: Height of image.
     public func extract(data: UnsafePointer<Double>,
                         width: Int,
                         height: Int) -> [Double] {
@@ -164,6 +181,11 @@ public class HOGFeatureExtractor {
         return normalizedHistogram
     }
     
+    /// Extract HOG Feature from gray scale image.
+    /// - Parameters:
+    ///   - data: Head of pixel values of gray scale image, row major order.
+    ///   - width: Width of image.
+    ///   - height: Height of image.
     public func extract(data: UnsafePointer<UInt8>, width: Int, height: Int) -> [Double] {
         var doubleImage = [Double](repeating: 0, count: width*height)
         vDSP_vfltu8D(data, 1, &doubleImage, 1, UInt(width*height))
