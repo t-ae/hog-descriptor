@@ -1,2 +1,1 @@
-// python test.py --image-size 3 3 --pixels-per-cell 3 3 --cells-per-block 1 1 --orientations 5
-let size_3_3_ori_5_ppc_3_3_bpc_1_1_L1 = [0.44855786833669375, 0.0, 0.13783610508214458, 0.0, 0.4135616294376171]
+let size_4_4_ori_5_ppc_4_4_bpc_1_1_L1 = [0.3227623445302491, 0.3852187004855911, 0.29199644129856933, 0.0, 0.0]

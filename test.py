@@ -4,6 +4,7 @@ import json
 import numpy as np
 import skimage.feature
 
+
 def main():
     parser = argparse.ArgumentParser(description="output test values")
     parser.add_argument("--image-size", nargs=2, type=int)
@@ -24,20 +25,19 @@ def main():
         imh = np.zeros_like(image)
         imv[1:-1, :] = image[2:, :] - image[:-2, :]
         imh[:, 1:-1] = image[:, 2:] - image[:, :-2]
-        grad = np.arctan2(imv, imh) * 180 / np.pi
-        
+        grad = np.rad2deg(np.arctan2(imv, imh)) % 180
         print("grad", grad)
         
         magnitude = np.hypot(imv, imh)
         print("magnitude", magnitude)
-        
        
         f, im = skimage.feature.hog(image, 
                                     orientations=args.orientations,
                                     pixels_per_cell=args.pixels_per_cell, 
                                     cells_per_block=args.cells_per_block, 
-                                   block_norm=args.block_norm,
-                                   visualize=True)
+                                    block_norm=args.block_norm,
+                                    visualize=True)
+        print(f)
         print(im)
         exit(0)
 
@@ -47,14 +47,15 @@ def main():
                             cells_per_block=args.cells_per_block, 
                             block_norm=args.block_norm)
     print(json.dumps(list(f)))
-    print("size_{}_{}_ori_{}_ppc_{}_{}_bpc_{}_{}_{}".format(args.image_size[0], 
-        args.image_size[1], 
-        args.orientations,
-        args.pixels_per_cell[0],
-        args.pixels_per_cell[1],
-        args.cells_per_block[0],
-        args.cells_per_block[1],
-        args.block_norm))
+    print("size_{}_{}_ori_{}_ppc_{}_{}_bpc_{}_{}_{}".format(args.image_size[0],
+                                                            args.image_size[1],
+                                                            args.orientations,
+                                                            args.pixels_per_cell[0],
+                                                            args.pixels_per_cell[1],
+                                                            args.cells_per_block[0],
+                                                            args.cells_per_block[1],
+                                                            args.block_norm))
+
 
 if __name__ == "__main__":
     main()

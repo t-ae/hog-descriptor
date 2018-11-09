@@ -130,6 +130,15 @@ public class HOGFeatureExtractor {
             }
         }
         
+        if false {
+            // Scale histogram
+            // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
+            // We don't need this since there are no non-linear normalization methods.
+            // But it's useful to check equality to scikit-image.
+            var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
+            vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
+        }
+        
         // normalize
         let numberOfBlocksX = numberOfCellX - cellsPerBlock.x + 1
         let numberOfBlocksY = numberOfCellY - cellsPerBlock.y + 1
@@ -144,10 +153,11 @@ public class HOGFeatureExtractor {
                 for cy in 0..<cellsPerBlock.y {
                     let size = cellsPerBlock.x * orientation
                     let blockRowHead = blockHead + cy * cellsPerBlock.x * orientation
-                    let cellHead = (by + cy) * numberOfCellX * orientation
+                    let cellHead = ((by + cy) * numberOfCellX + bx) * orientation
                     
                     normalizedHistogram.withUnsafeMutableBufferPointer {
                         let head = $0.baseAddress! + blockRowHead
+                        
                         memcpy(head,
                                &histograms + (cellHead * MemoryLayout<Double>.size),
                                size * MemoryLayout<Double>.size)

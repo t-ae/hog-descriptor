@@ -29,7 +29,9 @@
 		A7C0B6F6219575730063F55C /* D.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B6F5219575730063F55C /* D.swift */; };
 		A7C0B6F8219577100063F55C /* E.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B6F7219577100063F55C /* E.swift */; };
 		A7C0B6FA219577550063F55C /* F.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B6F9219577550063F55C /* F.swift */; };
-		A7C0B6FC219577CD0063F55C /* G.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B6FB219577CD0063F55C /* G.swift */; };
+		A7C0B6FE2195CDF50063F55C /* G.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B6FD2195CDF50063F55C /* G.swift */; };
+		A7C0B7022195DD1B0063F55C /* H.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B7012195DD1B0063F55C /* H.swift */; };
+		A7C0B7042195EB2B0063F55C /* I.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C0B7032195EB2B0063F55C /* I.swift */; };
 		OBJ_22 /* HOGFeatureExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* HOGFeatureExtractor.swift */; };
 		OBJ_29 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
 		OBJ_40 /* HOGFeatureExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* HOGFeatureExtractorTests.swift */; };
@@ -63,7 +65,9 @@
 		A7C0B6F5219575730063F55C /* D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = D.swift; sourceTree = "<group>"; };
 		A7C0B6F7219577100063F55C /* E.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E.swift; sourceTree = "<group>"; };
 		A7C0B6F9219577550063F55C /* F.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = F.swift; sourceTree = "<group>"; };
-		A7C0B6FB219577CD0063F55C /* G.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = G.swift; sourceTree = "<group>"; };
+		A7C0B6FD2195CDF50063F55C /* G.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = G.swift; sourceTree = "<group>"; };
+		A7C0B7012195DD1B0063F55C /* H.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = H.swift; sourceTree = "<group>"; };
+		A7C0B7032195EB2B0063F55C /* I.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = I.swift; sourceTree = "<group>"; };
 		"HOGFeatureExtractor::HOGFeatureExtractor::Product" /* HOGFeatureExtractor.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = HOGFeatureExtractor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"HOGFeatureExtractor::HOGFeatureExtractorTests::Product" /* HOGFeatureExtractorTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = HOGFeatureExtractorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_12 /* HOGFeatureExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HOGFeatureExtractorTests.swift; sourceTree = "<group>"; };
@@ -100,7 +104,9 @@
 				A7C0B6F5219575730063F55C /* D.swift */,
 				A7C0B6F7219577100063F55C /* E.swift */,
 				A7C0B6F9219577550063F55C /* F.swift */,
-				A7C0B6FB219577CD0063F55C /* G.swift */,
+				A7C0B6FD2195CDF50063F55C /* G.swift */,
+				A7C0B7012195DD1B0063F55C /* H.swift */,
+				A7C0B7032195EB2B0063F55C /* I.swift */,
 			);
 			path = SKImageOutput;
 			sourceTree = "<group>";
@@ -268,11 +274,13 @@
 				A7C0B6F4219573F80063F55C /* C.swift in Sources */,
 				A7C0B6EF219572840063F55C /* A.swift in Sources */,
 				OBJ_41 /* XCTestManifests.swift in Sources */,
+				A7C0B7022195DD1B0063F55C /* H.swift in Sources */,
+				A7C0B7042195EB2B0063F55C /* I.swift in Sources */,
+				A7C0B6FE2195CDF50063F55C /* G.swift in Sources */,
 				A7C0B6FA219577550063F55C /* F.swift in Sources */,
 				A7C0B6F6219575730063F55C /* D.swift in Sources */,
 				A7C0B6ED21956FDB0063F55C /* XCTAssert+Array.swift in Sources */,
 				A7C0B6E821956C760063F55C /* SKImageCompatibilityTests.swift in Sources */,
-				A7C0B6FC219577CD0063F55C /* G.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

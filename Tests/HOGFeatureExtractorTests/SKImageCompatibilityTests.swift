@@ -52,13 +52,13 @@ class SKImageCompatibilityTests: XCTestCase {
     }
     
     func testD() {
-        let f = skimageEquivalent(imageSize: (6, 6),
-                                  orientations: 9,
+        let f = skimageEquivalent(imageSize: (6, 4),
+                                  orientations: 3,
                                   pixelsPerCell: (2, 2),
-                                  cellsPerBlock: (3, 3),
+                                  cellsPerBlock: (2, 2),
                                   normalization: .l1)
         
-        XCTAssertEqual(f, size_6_6_ori_9_ppc_2_2_bpc_3_3_L1, accuracy: eps)
+        XCTAssertEqual(f, size_6_4_ori_3_ppc_2_2_bpc_2_2_L1, accuracy: eps)
     }
     
     func testE() {
@@ -82,12 +82,32 @@ class SKImageCompatibilityTests: XCTestCase {
     }
     
     func testG() {
-        let f = skimageEquivalent(imageSize: (3, 3),
+        let f = skimageEquivalent(imageSize: (4, 4),
                                   orientations: 5,
-                                  pixelsPerCell: (3, 3),
+                                  pixelsPerCell: (4, 4),
                                   cellsPerBlock: (1, 1),
                                   normalization: .l1)
         
-        XCTAssertEqual(f, size_3_3_ori_5_ppc_3_3_bpc_1_1_L1, accuracy: eps)
+        XCTAssertEqual(f, size_4_4_ori_5_ppc_4_4_bpc_1_1_L1, accuracy: eps)
+    }
+    
+    func testH() {
+        let f = skimageEquivalent(imageSize: (16, 16),
+                                  orientations: 3,
+                                  pixelsPerCell: (4, 4),
+                                  cellsPerBlock: (3, 3),
+                                  normalization: .l1)
+        
+        XCTAssertEqual(f, size_16_16_ori_3_ppc_4_4_bpc_3_3_L1, accuracy: eps)
+    }
+    
+    func testI() {
+        let f = skimageEquivalent(imageSize: (16, 16),
+                                  orientations: 9,
+                                  pixelsPerCell: (4, 4),
+                                  cellsPerBlock: (3, 3),
+                                  normalization: .l2)
+        
+        XCTAssertEqual(f, size_16_16_ori_9_ppc_4_4_bpc_3_3_L2, accuracy: eps)
     }
 }
