@@ -131,10 +131,10 @@ public class HOGFeatureExtractor {
             }
         }
         
-        if normalization == .l1sqrt || normalization == .l2Hys {
-            // Scale histogram
+        if false {
+            // Scale histograms
             // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
-            // We don't need this if the normalization method is linear.
+            // The final output doesn't differ without this?
             var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
             vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
         }

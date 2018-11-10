@@ -15,7 +15,29 @@ final class HOGFeatureExtractorTests: XCTestCase {
             XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
         do {
+            let extractor = HOGFeatureExtractor(cellSpan: 8, blockSpan: 4, orientation: 5, normalization: .l1sqrt)
+            
+            let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
+            let image2 = image1.map { Double($0)/255 }
+            
+            let f1 = extractor.extract(data: image1, width: 64, height: 64)
+            let f2 = extractor.extract(data: image2, width: 64, height: 64)
+            
+            XCTAssertEqual(f1, f2, accuracy: 1e-5)
+        }
+        do {
             let extractor = HOGFeatureExtractor(cellSpan: 8, blockSpan: 4, orientation: 5, normalization: .l2)
+            
+            let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
+            let image2 = image1.map { Double($0)/255 }
+            
+            let f1 = extractor.extract(data: image1, width: 64, height: 64)
+            let f2 = extractor.extract(data: image2, width: 64, height: 64)
+            
+            XCTAssertEqual(f1, f2, accuracy: 1e-5)
+        }
+        do {
+            let extractor = HOGFeatureExtractor(cellSpan: 8, blockSpan: 4, orientation: 5, normalization: .l2Hys)
             
             let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
             let image2 = image1.map { Double($0)/255 }
