@@ -146,57 +146,56 @@ public class HOGFeatureExtractor {
         let featureCount = numberOfBlocksY*numberOfBlocksX*cellsPerBlock.y*cellsPerBlock.x*orientation
         var normalizedHistogram = [Double](repeating: 0, count: featureCount)
         
-        for by in 0..<numberOfBlocksY {
-            for bx in 0..<numberOfBlocksX {
-                let blockHead = ((by*numberOfBlocksX) + bx) * cellsPerBlock.y * cellsPerBlock.x * orientation
-                let cellHead = (by * numberOfCellX + bx) * orientation
-                
-                let cols = UInt(cellsPerBlock.x * orientation)
-                let rows = UInt(cellsPerBlock.y)
-                
-                let ta = UInt(numberOfCellX*orientation)
-                let tc = UInt(cellsPerBlock.x*orientation)
-                
-                vDSP_mmovD(&histograms + cellHead,
-                           &normalizedHistogram + blockHead,
-                           cols, rows,
-                           ta, tc)
-                
-                normalizedHistogram.withUnsafeMutableBufferPointer {
-                    let head = $0.baseAddress! + blockHead
-                    let size = cellsPerBlock.y * cellsPerBlock.x * orientation
+        normalizedHistogram.withUnsafeMutableBufferPointer {
+            let cols = UInt(cellsPerBlock.x * orientation)
+            let rows = UInt(cellsPerBlock.y)
+            
+            let ta = UInt(numberOfCellX*orientation)
+            let tc = UInt(cellsPerBlock.x*orientation)
+            
+            let blockSize = cellsPerBlock.y * cellsPerBlock.x * orientation
+            var sum: Double = 0
+            
+            var blockHead = $0.baseAddress!
+            for by in 0..<numberOfBlocksY {
+                for bx in 0..<numberOfBlocksX {
+                    let cellHeadIndex = (by * numberOfCellX + bx) * orientation
+                    
+                    vDSP_mmovD(&histograms + cellHeadIndex,
+                               blockHead,
+                               cols, rows,
+                               ta, tc)
+                    
                     switch normalization {
                     case .l1:
-                        var sum: Double = 0
-                        vDSP_sveD(head, 1, &sum, UInt(size))
+                        vDSP_sveD(blockHead, 1, &sum, UInt(blockSize))
                         sum += eps
-                        vDSP_vsdivD(head, 1, &sum, head, 1, UInt(size))
+                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
                     case .l1sqrt:
-                        var sum: Double = 0
-                        vDSP_sveD(head, 1, &sum, UInt(size))
+                        vDSP_sveD(blockHead, 1, &sum, UInt(blockSize))
                         sum += eps
-                        vDSP_vsdivD(head, 1, &sum, head, 1, UInt(size))
-                        var _cnt = Int32(size)
-                        vvsqrt(head, head, &_cnt)
+                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
+                        var _cnt = Int32(blockSize)
+                        vvsqrt(blockHead, blockHead, &_cnt)
                     case .l2:
-                        var sum2: Double = 0
-                        vDSP_svesqD(head, 1, &sum2, UInt(size))
-                        sum2 = sqrt(sum2) + eps
-                        vDSP_vsdivD(head, 1, &sum2, head, 1, UInt(size))
+                        vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
+                        sum = sqrt(sum) + eps
+                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
                     case .l2Hys:
-                        var sum2: Double = 0
-                        vDSP_svesqD(head, 1, &sum2, UInt(size))
-                        sum2 = sqrt(sum2) + eps
-                        vDSP_vsdivD(head, 1, &sum2, head, 1, UInt(size))
+                        vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
+                        sum = sqrt(sum) + eps
+                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
                         
                         var lower = 0.0
                         var upper = 0.2
-                        vDSP_vclipD(head, 1, &lower, &upper, head, 1, UInt(size))
+                        vDSP_vclipD(blockHead, 1, &lower, &upper, blockHead, 1, UInt(blockSize))
                         
-                        vDSP_svesqD(head, 1, &sum2, UInt(size))
-                        sum2 = sqrt(sum2) + eps
-                        vDSP_vsdivD(head, 1, &sum2, head, 1, UInt(size))
+                        vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
+                        sum = sqrt(sum) + eps
+                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
                     }
+                    
+                    blockHead += blockSize
                 }
             }
         }

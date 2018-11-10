@@ -49,7 +49,52 @@ final class HOGFeatureExtractorTests: XCTestCase {
         }
     }
     
-    func testPerformance() {
+    func testPerformanceL1() {
+        let extractor = HOGFeatureExtractor(cellSpan: 8, blockSpan: 3, orientation: 9, normalization: .l1)
+        
+        let iterations = 100
+        let width = 256
+        let height = 256
+        let image = (0..<width*height).map { _ in Double.random(in: 0..<255) }
+        
+        measure {
+            for _ in 0..<iterations {
+                _ = extractor.extract(data: image, width: width, height: height)
+            }
+        }
+    }
+    
+    func testPerformanceL1sqrt() {
+        let extractor = HOGFeatureExtractor(cellSpan: 8, blockSpan: 3, orientation: 9, normalization: .l1sqrt)
+        
+        let iterations = 100
+        let width = 256
+        let height = 256
+        let image = (0..<width*height).map { _ in Double.random(in: 0..<255) }
+        
+        measure {
+            for _ in 0..<iterations {
+                _ = extractor.extract(data: image, width: width, height: height)
+            }
+        }
+    }
+    
+    func testPerformanceL2() {
+        let extractor = HOGFeatureExtractor(cellSpan: 8, blockSpan: 3, orientation: 9, normalization: .l2)
+        
+        let iterations = 100
+        let width = 256
+        let height = 256
+        let image = (0..<width*height).map { _ in Double.random(in: 0..<255) }
+        
+        measure {
+            for _ in 0..<iterations {
+                _ = extractor.extract(data: image, width: width, height: height)
+            }
+        }
+    }
+    
+    func testPerformanceL2Hys() {
         let extractor = HOGFeatureExtractor(cellSpan: 8, blockSpan: 3, orientation: 9, normalization: .l2Hys)
         
         let iterations = 100
