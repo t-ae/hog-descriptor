@@ -108,7 +108,7 @@ public class HOGFeatureExtractor {
         var magnitude = [Double](repeating: 0, count: gradX.count)
         vDSP_vdistD(gradX, 1, gradY, 1, &magnitude, 1, UInt(magnitude.count))
         
-        // accumulate to histogram
+        // accumulate to histograms
         var histograms = [Double](repeating: 0, count: numberOfCellY*numberOfCellX*orientation)
         for y in 0..<height {
             let cellY = y / pixelsPerCell.y
@@ -149,20 +149,18 @@ public class HOGFeatureExtractor {
         for by in 0..<numberOfBlocksY {
             for bx in 0..<numberOfBlocksX {
                 let blockHead = ((by*numberOfBlocksX) + bx) * cellsPerBlock.y * cellsPerBlock.x * orientation
+                let cellHead = (by * numberOfCellX + bx) * orientation
                 
-                for cy in 0..<cellsPerBlock.y {
-                    let size = cellsPerBlock.x * orientation
-                    let blockRowHead = blockHead + cy * cellsPerBlock.x * orientation
-                    let cellHead = ((by + cy) * numberOfCellX + bx) * orientation
-                    
-                    normalizedHistogram.withUnsafeMutableBufferPointer {
-                        let head = $0.baseAddress! + blockRowHead
-                        
-                        memcpy(head,
-                               &histograms + (cellHead * MemoryLayout<Double>.size),
-                               size * MemoryLayout<Double>.size)
-                    }
-                }
+                let cols = UInt(cellsPerBlock.x * orientation)
+                let rows = UInt(cellsPerBlock.y)
+                
+                let ta = UInt(numberOfCellX*orientation)
+                let tc = UInt(cellsPerBlock.x*orientation)
+                
+                vDSP_mmovD(&histograms + cellHead,
+                           &normalizedHistogram + blockHead,
+                           cols, rows,
+                           ta, tc)
                 
                 normalizedHistogram.withUnsafeMutableBufferPointer {
                     let head = $0.baseAddress! + blockHead
