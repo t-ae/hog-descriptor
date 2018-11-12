@@ -80,14 +80,14 @@ public class HOGDescriptor {
         return (gradX, gradY)
     }
     
-    /// Extract HOG Feature from gray scale image.
+    /// Descript HOG Feature from gray scale image.
     /// - Parameters:
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
-    public func extract(data: UnsafePointer<Double>,
-                        width: Int,
-                        height: Int) -> [Double] {
+    public func descript(data: UnsafePointer<Double>,
+                         width: Int,
+                         height: Int) -> [Double] {
         
         let numberOfCellX = width / pixelsPerCell.x
         let numberOfCellY = height / pixelsPerCell.y
@@ -203,16 +203,16 @@ public class HOGDescriptor {
         return normalizedHistogram
     }
     
-    /// Extract HOG Feature from gray scale image.
+    /// Descript HOG Feature from gray scale image.
     /// - Parameters:
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
-    public func extract(data: UnsafePointer<UInt8>, width: Int, height: Int) -> [Double] {
+    public func descript(data: UnsafePointer<UInt8>, width: Int, height: Int) -> [Double] {
         var doubleImage = [Double](repeating: 0, count: width*height)
         vDSP_vfltu8D(data, 1, &doubleImage, 1, UInt(width*height))
         
-        return extract(data: doubleImage, width: width, height: height)
+        return descript(data: doubleImage, width: width, height: height)
     }
 }
 

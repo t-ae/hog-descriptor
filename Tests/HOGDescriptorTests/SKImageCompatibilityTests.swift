@@ -16,7 +16,7 @@ class SKImageCompatibilityTests: XCTestCase {
                                       cellsPerBlock: cellsPerBlock,
                                       normalization: normalization)
         
-        return extractor.extract(data: image, width: imageSize.0, height: imageSize.1)
+        return extractor.descript(data: image, width: imageSize.0, height: imageSize.1)
     }
     
     let eps = 1e-4

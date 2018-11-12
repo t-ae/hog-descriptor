@@ -9,8 +9,8 @@ final class HOGFeatureExtractorTests: XCTestCase {
             let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
             let image2 = image1.map { Double($0)/255 }
             
-            let f1 = extractor.extract(data: image1, width: 64, height: 64)
-            let f2 = extractor.extract(data: image2, width: 64, height: 64)
+            let f1 = extractor.descript(data: image1, width: 64, height: 64)
+            let f2 = extractor.descript(data: image2, width: 64, height: 64)
             
             XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
@@ -20,8 +20,8 @@ final class HOGFeatureExtractorTests: XCTestCase {
             let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
             let image2 = image1.map { Double($0)/255 }
             
-            let f1 = extractor.extract(data: image1, width: 64, height: 64)
-            let f2 = extractor.extract(data: image2, width: 64, height: 64)
+            let f1 = extractor.descript(data: image1, width: 64, height: 64)
+            let f2 = extractor.descript(data: image2, width: 64, height: 64)
             
             XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
@@ -31,8 +31,8 @@ final class HOGFeatureExtractorTests: XCTestCase {
             let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
             let image2 = image1.map { Double($0)/255 }
             
-            let f1 = extractor.extract(data: image1, width: 64, height: 64)
-            let f2 = extractor.extract(data: image2, width: 64, height: 64)
+            let f1 = extractor.descript(data: image1, width: 64, height: 64)
+            let f2 = extractor.descript(data: image2, width: 64, height: 64)
             
             XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
@@ -42,8 +42,8 @@ final class HOGFeatureExtractorTests: XCTestCase {
             let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
             let image2 = image1.map { Double($0)/255 }
             
-            let f1 = extractor.extract(data: image1, width: 64, height: 64)
-            let f2 = extractor.extract(data: image2, width: 64, height: 64)
+            let f1 = extractor.descript(data: image1, width: 64, height: 64)
+            let f2 = extractor.descript(data: image2, width: 64, height: 64)
             
             XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
@@ -59,7 +59,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
         
         measure {
             for _ in 0..<iterations {
-                _ = extractor.extract(data: image, width: width, height: height)
+                _ = extractor.descript(data: image, width: width, height: height)
             }
         }
     }
@@ -74,7 +74,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
         
         measure {
             for _ in 0..<iterations {
-                _ = extractor.extract(data: image, width: width, height: height)
+                _ = extractor.descript(data: image, width: width, height: height)
             }
         }
     }
@@ -89,7 +89,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
         
         measure {
             for _ in 0..<iterations {
-                _ = extractor.extract(data: image, width: width, height: height)
+                _ = extractor.descript(data: image, width: width, height: height)
             }
         }
     }
@@ -104,7 +104,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
         
         measure {
             for _ in 0..<iterations {
-                _ = extractor.extract(data: image, width: width, height: height)
+                _ = extractor.descript(data: image, width: width, height: height)
             }
         }
     }
