@@ -1,10 +1,10 @@
 import XCTest
-import HOGFeatureExtractor
+import HOGDescriptor
 
 final class HOGFeatureExtractorTests: XCTestCase {
     func testScaleInvariance() {
         do {
-            let extractor = HOGFeatureExtractor(orientations: 9, cellSpan: 3, blockSpan: 4, normalization: .l1)
+            let extractor = HOGDescriptor(orientations: 9, cellSpan: 3, blockSpan: 4, normalization: .l1)
             
             let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
             let image2 = image1.map { Double($0)/255 }
@@ -15,7 +15,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
             XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
         do {
-            let extractor = HOGFeatureExtractor(orientations: 5, cellSpan: 8, blockSpan: 4, normalization: .l1sqrt)
+            let extractor = HOGDescriptor(orientations: 5, cellSpan: 8, blockSpan: 4, normalization: .l1sqrt)
             
             let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
             let image2 = image1.map { Double($0)/255 }
@@ -26,7 +26,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
             XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
         do {
-            let extractor = HOGFeatureExtractor(orientations: 5, cellSpan: 8, blockSpan: 4, normalization: .l2)
+            let extractor = HOGDescriptor(orientations: 5, cellSpan: 8, blockSpan: 4, normalization: .l2)
             
             let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
             let image2 = image1.map { Double($0)/255 }
@@ -37,7 +37,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
             XCTAssertEqual(f1, f2, accuracy: 1e-5)
         }
         do {
-            let extractor = HOGFeatureExtractor(orientations: 5, cellSpan: 8, blockSpan: 4, normalization: .l2Hys)
+            let extractor = HOGDescriptor(orientations: 5, cellSpan: 8, blockSpan: 4, normalization: .l2Hys)
             
             let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
             let image2 = image1.map { Double($0)/255 }
@@ -50,7 +50,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
     }
     
     func testPerformanceL1() {
-        let extractor = HOGFeatureExtractor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l1)
+        let extractor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l1)
         
         let iterations = 100
         let width = 256
@@ -65,7 +65,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
     }
     
     func testPerformanceL1sqrt() {
-        let extractor = HOGFeatureExtractor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l1sqrt)
+        let extractor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l1sqrt)
         
         let iterations = 100
         let width = 256
@@ -80,7 +80,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
     }
     
     func testPerformanceL2() {
-        let extractor = HOGFeatureExtractor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l2)
+        let extractor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l2)
         
         let iterations = 100
         let width = 256
@@ -95,7 +95,7 @@ final class HOGFeatureExtractorTests: XCTestCase {
     }
     
     func testPerformanceL2Hys() {
-        let extractor = HOGFeatureExtractor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l2Hys)
+        let extractor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l2Hys)
         
         let iterations = 100
         let width = 256
@@ -111,5 +111,5 @@ final class HOGFeatureExtractorTests: XCTestCase {
     
     static var allTests = [
         ("testScaleInvariance", testScaleInvariance),
-    ]
+        ]
 }

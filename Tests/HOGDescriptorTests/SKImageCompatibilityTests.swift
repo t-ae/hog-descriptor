@@ -1,5 +1,5 @@
 import XCTest
-@testable import HOGFeatureExtractor
+@testable import HOGDescriptor
 
 class SKImageCompatibilityTests: XCTestCase {
     
@@ -7,14 +7,14 @@ class SKImageCompatibilityTests: XCTestCase {
                            orientations: Int,
                            pixelsPerCell: (Int, Int),
                            cellsPerBlock: (Int, Int),
-                           normalization: HOGFeatureExtractor.NormalizationMethod) -> [Double] {
+                           normalization: HOGDescriptor.NormalizationMethod) -> [Double] {
         
         let image = (0..<imageSize.0*imageSize.1).map { abs(sin(Double($0))) }
         
-        let extractor = HOGFeatureExtractor(orientations: orientations,
-                                            pixelsPerCell: pixelsPerCell,
-                                            cellsPerBlock: cellsPerBlock,
-                                            normalization: normalization)
+        let extractor = HOGDescriptor(orientations: orientations,
+                                      pixelsPerCell: pixelsPerCell,
+                                      cellsPerBlock: cellsPerBlock,
+                                      normalization: normalization)
         
         return extractor.extract(data: image, width: imageSize.0, height: imageSize.1)
     }

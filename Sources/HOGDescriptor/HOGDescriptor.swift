@@ -1,7 +1,7 @@
 import Foundation
 import Accelerate
 
-public class HOGFeatureExtractor {
+public class HOGDescriptor {
     
     public enum NormalizationMethod {
         case l1, l1sqrt, l2, l2Hys
