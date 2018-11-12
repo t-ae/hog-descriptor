@@ -12,39 +12,79 @@ public class HOGDescriptor {
     public let orientations: Int
     
     public let normalization: NormalizationMethod
+    public let transformSqrt: Bool
     
     public let eps = 1e-5
     
     /// Create HOGFeatureExtractor.
     /// - Parameters:
     ///   - orientation: Number of orientation bins. default: 9
-    ///   - pixelsPerCell: Size (in pixels) of a cell.
-    ///   - cellsPerBlock: Number of cells in each block.
+    ///   - pixelsPerCell: Size (in pixels) of a cell. default: (8, 8)
+    ///   - cellsPerBlock: Number of cells in each block. default: (3, 3)
     ///   - normalization: Block normalization method. default: .l1
+    ///   - transformSqrt: Apply power law compression to normalize the image before processing. default: false
     public init(orientations: Int = 9,
                 pixelsPerCell: (x: Int, y: Int) = (8, 8),
                 cellsPerBlock: (x: Int, y: Int) = (3, 3),
-                normalization: NormalizationMethod = .l1) {
+                normalization: NormalizationMethod = .l1,
+                transformSqrt: Bool = false) {
         self.pixelsPerCell = pixelsPerCell
         self.cellsPerBlock = cellsPerBlock
         self.orientations = orientations
         self.normalization = normalization
+        self.transformSqrt = transformSqrt
     }
     
     /// Create HOGFeatureExtractor with square cells/blocks.
     /// - Parameters:
     ///   - orientations: Number of orientation bins. default: 9
-    ///   - cellSpan: Size (in pixels) of a cell.
-    ///   - blockSpan: Number of cells in each block.
+    ///   - cellSpan: Size (in pixels) of a cell. default: 8
+    ///   - blockSpan: Number of cells in each block. default: 3
     ///   - normalization: Block normalization method. default: .l1
+    ///   - transformSqrt: Apply power law compression to normalize the image before processing. default: false
     public convenience init(orientations: Int = 9,
                             cellSpan: Int = 8,
                             blockSpan: Int = 3,
-                            normalization: NormalizationMethod = .l1) {
+                            normalization: NormalizationMethod = .l1,
+                            transformSqrt: Bool = false) {
         self.init(orientations: orientations,
                   pixelsPerCell: (cellSpan, cellSpan),
                   cellsPerBlock: (blockSpan, blockSpan),
-                  normalization: normalization)
+                  normalization: normalization,
+                  transformSqrt: transformSqrt)
+    }
+    
+    /// Descript HOG Feature from gray scale image.
+    /// - Parameters:
+    ///   - data: Head of pixel values of gray scale image, row major order.
+    ///   - width: Width of image.
+    ///   - height: Height of image.
+    public func descript(data: UnsafePointer<Double>,
+                         width: Int,
+                         height: Int) -> [Double] {
+        if transformSqrt {
+            var transformed = [Double](repeating: 0, count: width*height)
+            var count = Int32(transformed.count)
+            vvsqrt(&transformed, data, &count)
+            return _descript(data: transformed, width: width, height: height)
+        } else {
+            return _descript(data: data, width: width, height: height)
+        }
+    }
+    
+    /// Descript HOG Feature from gray scale image.
+    /// - Parameters:
+    ///   - data: Head of pixel values of gray scale image, row major order.
+    ///   - width: Width of image.
+    ///   - height: Height of image.
+    public func descript(data: UnsafePointer<UInt8>, width: Int, height: Int) -> [Double] {
+        var doubleImage = [Double](repeating: 0, count: width*height)
+        vDSP_vfltu8D(data, 1, &doubleImage, 1, UInt(doubleImage.count))
+        if transformSqrt {
+            var count = Int32(doubleImage.count)
+            vvsqrt(&doubleImage, doubleImage, &count)
+        }
+        return _descript(data: doubleImage, width: width, height: height)
     }
     
     private func derivate(data: UnsafePointer<Double>, width: Int, height: Int) -> (x: [Double], y: [Double]) {
@@ -80,12 +120,7 @@ public class HOGDescriptor {
         return (gradX, gradY)
     }
     
-    /// Descript HOG Feature from gray scale image.
-    /// - Parameters:
-    ///   - data: Head of pixel values of gray scale image, row major order.
-    ///   - width: Width of image.
-    ///   - height: Height of image.
-    public func descript(data: UnsafePointer<Double>,
+    public func _descript(data: UnsafePointer<Double>,
                          width: Int,
                          height: Int) -> [Double] {
         
@@ -201,18 +236,6 @@ public class HOGDescriptor {
         }
         
         return normalizedHistogram
-    }
-    
-    /// Descript HOG Feature from gray scale image.
-    /// - Parameters:
-    ///   - data: Head of pixel values of gray scale image, row major order.
-    ///   - width: Width of image.
-    ///   - height: Height of image.
-    public func descript(data: UnsafePointer<UInt8>, width: Int, height: Int) -> [Double] {
-        var doubleImage = [Double](repeating: 0, count: width*height)
-        vDSP_vfltu8D(data, 1, &doubleImage, 1, UInt(width*height))
-        
-        return descript(data: doubleImage, width: width, height: height)
     }
 }
 
