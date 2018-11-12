@@ -8,14 +8,14 @@ Descript HOG feature vector from gray scale image.
 let width, height: Int
 let imageBuffer: [Double] // contains gray scale, row major pixel values
 
-let extractor = HOGFeatureExtractor(pixelsPerCell: pixelsPerCell,
-                                    cellsPerBlock: cellsPerBlock,
-                                    orientation: orientations,
-                                    normalization: normalization)
+let hogDescriptor = HOGDescriptor(pixelsPerCell: pixelsPerCell,
+                                  cellsPerBlock: cellsPerBlock,
+                                  orientation: orientations,
+                                  normalization: normalization)
 
-let features = extractor.extract(data: imageBuffer,
-                                 width: width, 
-                                 height: height)
+let features = hogDescriptor.descript(data: imageBuffer,
+                                      width: width, 
+                                      height: height)
 ```
 
 ## Compatible with scikit-image
