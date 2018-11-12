@@ -54,37 +54,37 @@ public class HOGDescriptor {
                   transformSqrt: transformSqrt)
     }
     
-    /// Descript HOG Feature from gray scale image.
+    /// Get HOG descriptor from gray scale image.
     /// - Parameters:
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
-    public func descript(data: UnsafePointer<Double>,
-                         width: Int,
-                         height: Int) -> [Double] {
+    public func getDescriptor(data: UnsafePointer<Double>,
+                           width: Int,
+                           height: Int) -> [Double] {
         if transformSqrt {
             var transformed = [Double](repeating: 0, count: width*height)
             var count = Int32(transformed.count)
             vvsqrt(&transformed, data, &count)
-            return _descript(data: transformed, width: width, height: height)
+            return _getDescriptor(data: transformed, width: width, height: height)
         } else {
-            return _descript(data: data, width: width, height: height)
+            return _getDescriptor(data: data, width: width, height: height)
         }
     }
     
-    /// Descript HOG Feature from gray scale image.
+    /// Get HOG descriptor from gray scale image.
     /// - Parameters:
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
-    public func descript(data: UnsafePointer<UInt8>, width: Int, height: Int) -> [Double] {
+    public func getDescriptor(data: UnsafePointer<UInt8>, width: Int, height: Int) -> [Double] {
         var doubleImage = [Double](repeating: 0, count: width*height)
         vDSP_vfltu8D(data, 1, &doubleImage, 1, UInt(doubleImage.count))
         if transformSqrt {
             var count = Int32(doubleImage.count)
             vvsqrt(&doubleImage, doubleImage, &count)
         }
-        return _descript(data: doubleImage, width: width, height: height)
+        return _getDescriptor(data: doubleImage, width: width, height: height)
     }
     
     private func derivate(data: UnsafePointer<Double>, width: Int, height: Int) -> (x: [Double], y: [Double]) {
@@ -120,9 +120,9 @@ public class HOGDescriptor {
         return (gradX, gradY)
     }
     
-    public func _descript(data: UnsafePointer<Double>,
-                         width: Int,
-                         height: Int) -> [Double] {
+    public func _getDescriptor(data: UnsafePointer<Double>,
+                               width: Int,
+                               height: Int) -> [Double] {
         
         let numberOfCellX = width / pixelsPerCell.x
         let numberOfCellY = height / pixelsPerCell.y

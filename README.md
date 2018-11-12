@@ -1,6 +1,6 @@
 # HOGDescriptor
 
-Descript [HOG](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients) feature vector from gray scale image.
+Get [HOG Descriptor](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients) from gray scale image.
 
 ## Usage
 
@@ -13,9 +13,9 @@ let hogDescriptor = HOGDescriptor(pixelsPerCell: pixelsPerCell,
                                   orientation: orientations,
                                   normalization: normalization)
 
-let features = hogDescriptor.descript(data: imageBuffer,
-                                      width: width, 
-                                      height: height)
+let features = hogDescriptor.getDescriptor(data: imageBuffer,
+                                           width: width, 
+                                           height: height)
 ```
 
 ## Compatible with scikit-image
