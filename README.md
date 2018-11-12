@@ -1,6 +1,6 @@
-# HOGFeatureExtractor
+# HOGDescriptor
 
-Extract HOG feature vector from gray scale image.
+Descript HOG feature vector from gray scale image.
 
 ## Usage
 
