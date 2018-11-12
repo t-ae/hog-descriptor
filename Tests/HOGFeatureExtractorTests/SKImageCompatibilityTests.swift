@@ -11,9 +11,9 @@ class SKImageCompatibilityTests: XCTestCase {
         
         let image = (0..<imageSize.0*imageSize.1).map { abs(sin(Double($0))) }
         
-        let extractor = HOGFeatureExtractor(pixelsPerCell: pixelsPerCell,
+        let extractor = HOGFeatureExtractor(orientations: orientations,
+                                            pixelsPerCell: pixelsPerCell,
                                             cellsPerBlock: cellsPerBlock,
-                                            orientation: orientations,
                                             normalization: normalization)
         
         return extractor.extract(data: image, width: imageSize.0, height: imageSize.1)

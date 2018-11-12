@@ -9,7 +9,7 @@ public class HOGFeatureExtractor {
     
     public let pixelsPerCell: (x: Int, y: Int)
     public let cellsPerBlock: (x: Int, y: Int)
-    public let orientation: Int
+    public let orientations: Int
     
     public let normalization: NormalizationMethod
     
@@ -17,33 +17,33 @@ public class HOGFeatureExtractor {
     
     /// Create HOGFeatureExtractor.
     /// - Parameters:
+    ///   - orientation: Number of orientation bins. default: 9
     ///   - pixelsPerCell: Size (in pixels) of a cell.
     ///   - cellsPerBlock: Number of cells in each block.
-    ///   - orientation: Number of orientation bins. default: 9
     ///   - normalization: Block normalization method. default: .l1
-    public init(pixelsPerCell: (x: Int, y: Int),
-                cellsPerBlock: (x: Int, y: Int),
-                orientation: Int = 9,
+    public init(orientations: Int = 9,
+                pixelsPerCell: (x: Int, y: Int) = (8, 8),
+                cellsPerBlock: (x: Int, y: Int) = (3, 3),
                 normalization: NormalizationMethod = .l1) {
         self.pixelsPerCell = pixelsPerCell
         self.cellsPerBlock = cellsPerBlock
-        self.orientation = orientation
+        self.orientations = orientations
         self.normalization = normalization
     }
     
-    /// Create HOGFeatureExtractor.
+    /// Create HOGFeatureExtractor with square cells/blocks.
     /// - Parameters:
+    ///   - orientations: Number of orientation bins. default: 9
     ///   - cellSpan: Size (in pixels) of a cell.
     ///   - blockSpan: Number of cells in each block.
-    ///   - orientation: Number of orientation bins. default: 9
     ///   - normalization: Block normalization method. default: .l1
-    public convenience init(cellSpan: Int,
-                            blockSpan: Int,
-                            orientation: Int = 9,
+    public convenience init(orientations: Int = 9,
+                            cellSpan: Int = 8,
+                            blockSpan: Int = 3,
                             normalization: NormalizationMethod = .l1) {
-        self.init(pixelsPerCell: (cellSpan, cellSpan),
+        self.init(orientations: orientations,
+                  pixelsPerCell: (cellSpan, cellSpan),
                   cellsPerBlock: (blockSpan, blockSpan),
-                  orientation: orientation,
                   normalization: normalization)
     }
     
@@ -100,8 +100,8 @@ public class HOGFeatureExtractor {
         do {
             var _cnt = Int32(grad.count)
             vvatan2(&grad, gradY, gradX, &_cnt) // [-pi, pi]
-            var multiplier = Double(orientation) / .pi
-            var adder = Double(orientation)
+            var multiplier = Double(orientations) / .pi
+            var adder = Double(orientations)
             vDSP_vsmsaD(grad, 1, &multiplier, &adder, &grad, 1, UInt(grad.count)) // [0, 2*orientation]
         }
         
@@ -109,7 +109,7 @@ public class HOGFeatureExtractor {
         vDSP_vdistD(gradX, 1, gradY, 1, &magnitude, 1, UInt(magnitude.count))
         
         // accumulate to histograms
-        var histograms = [Double](repeating: 0, count: numberOfCellY*numberOfCellX*orientation)
+        var histograms = [Double](repeating: 0, count: numberOfCellY*numberOfCellX*orientations)
         for y in 0..<height {
             let cellY = y / pixelsPerCell.y
             guard cellY < numberOfCellY else {
@@ -122,50 +122,50 @@ public class HOGFeatureExtractor {
                 }
                 
                 var directionIndex = Int(grad[y*width+x])
-                while directionIndex >= orientation {
-                    directionIndex -= orientation
+                while directionIndex >= orientations {
+                    directionIndex -= orientations
                 }
                 
-                let histogramIndex = (cellY * numberOfCellX + cellX) * orientation
+                let histogramIndex = (cellY * numberOfCellX + cellX) * orientations
                 histograms[histogramIndex + directionIndex] += magnitude[y*width+x]
             }
         }
         
-        if false {
-            // Scale histograms
-            // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
-            // The final output doesn't differ without this?
-            var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
-            vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
-        }
+        // Scale histograms
+        // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
+        // The final output doesn't differ without this?
+//        var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
+//        vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
         
         // normalize
         let numberOfBlocksX = numberOfCellX - cellsPerBlock.x + 1
         let numberOfBlocksY = numberOfCellY - cellsPerBlock.y + 1
         
-        let featureCount = numberOfBlocksY*numberOfBlocksX*cellsPerBlock.y*cellsPerBlock.x*orientation
+        let featureCount = numberOfBlocksY*numberOfBlocksX*cellsPerBlock.y*cellsPerBlock.x*orientations
         var normalizedHistogram = [Double](repeating: 0, count: featureCount)
         
         normalizedHistogram.withUnsafeMutableBufferPointer {
-            let cols = UInt(cellsPerBlock.x * orientation)
+            let cols = UInt(cellsPerBlock.x * orientations)
             let rows = UInt(cellsPerBlock.y)
             
-            let ta = UInt(numberOfCellX*orientation)
-            let tc = UInt(cellsPerBlock.x*orientation)
+            let ta = UInt(numberOfCellX*orientations)
+            let tc = UInt(cellsPerBlock.x*orientations)
             
-            let blockSize = cellsPerBlock.y * cellsPerBlock.x * orientation
+            let blockSize = cellsPerBlock.y * cellsPerBlock.x * orientations
             var sum: Double = 0
             
             var blockHead = $0.baseAddress!
             for by in 0..<numberOfBlocksY {
                 for bx in 0..<numberOfBlocksX {
-                    let cellHeadIndex = (by * numberOfCellX + bx) * orientation
+                    let cellHeadIndex = (by * numberOfCellX + bx) * orientations
                     
+                    // copy block
                     vDSP_mmovD(&histograms + cellHeadIndex,
                                blockHead,
                                cols, rows,
                                ta, tc)
                     
+                    // normalize block
                     switch normalization {
                     case .l1:
                         vDSP_sveD(blockHead, 1, &sum, UInt(blockSize))
