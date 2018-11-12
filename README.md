@@ -1,6 +1,6 @@
 # HOGDescriptor
 
-Descript HOG feature vector from gray scale image.
+Descript [HOG](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients) feature vector from gray scale image.
 
 ## Usage
 
