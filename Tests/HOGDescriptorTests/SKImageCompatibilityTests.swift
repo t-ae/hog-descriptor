@@ -11,16 +11,16 @@ class SKImageCompatibilityTests: XCTestCase {
         
         let image = (0..<imageSize.0*imageSize.1).map { abs(sin(Double($0))) }
         
-        let extractor = HOGDescriptor(orientations: orientations,
-                                      pixelsPerCell: pixelsPerCell,
-                                      cellsPerBlock: cellsPerBlock,
-                                      normalization: normalization)
+        let hogDescriptor = HOGDescriptor(orientations: orientations,
+                                          pixelsPerCell: pixelsPerCell,
+                                          cellsPerBlock: cellsPerBlock,
+                                          normalization: normalization)
         
-        return extractor.getDescriptor(data: image, width: imageSize.0, height: imageSize.1)
+        return hogDescriptor.getDescriptor(data: image, width: imageSize.0, height: imageSize.1)
     }
     
     let eps = 1e-4
-
+    
     func testA() {
         let f = skimageEquivalent(imageSize: (4, 4),
                                   orientations: 9,

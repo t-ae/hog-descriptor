@@ -54,14 +54,25 @@ public class HOGDescriptor {
                   transformSqrt: transformSqrt)
     }
     
+    /// Get size of HOG descriptor for specified width/size image.
+    public func getDescriptorSize(width: Int, height: Int) -> Int {
+        let numberOfCellX = width / pixelsPerCell.x
+        let numberOfCellY = height / pixelsPerCell.y
+        
+        let numberOfBlocksX = numberOfCellX - cellsPerBlock.x + 1
+        let numberOfBlocksY = numberOfCellY - cellsPerBlock.y + 1
+        
+        return numberOfBlocksY*numberOfBlocksX*cellsPerBlock.y*cellsPerBlock.x*orientations
+    }
+    
     /// Get HOG descriptor from gray scale image.
     /// - Parameters:
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
     public func getDescriptor(data: UnsafePointer<Double>,
-                           width: Int,
-                           height: Int) -> [Double] {
+                              width: Int,
+                              height: Int) -> [Double] {
         if transformSqrt {
             var transformed = [Double](repeating: 0, count: width*height)
             var count = Int32(transformed.count)
@@ -169,8 +180,8 @@ public class HOGDescriptor {
         // Scale histograms
         // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
         // The final output doesn't differ without this?
-//        var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
-//        vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
+        //        var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
+        //        vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
         
         // normalize
         let numberOfBlocksX = numberOfCellX - cellsPerBlock.x + 1
