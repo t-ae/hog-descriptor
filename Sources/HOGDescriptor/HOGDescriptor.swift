@@ -236,9 +236,9 @@ public class HOGDescriptor {
         
         // Scale histograms
         // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
-        // The final output doesn't differ without this?
-        //        var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
-        //        vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
+        // Since it's only for visualize feature, final output doesn't differ without this.
+        // var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
+        // vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
         
         // normalize
         let numberOfBlocks = (x: numberOfCells.x - cellsPerBlock.x + 1,
