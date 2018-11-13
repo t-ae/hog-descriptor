@@ -70,6 +70,7 @@ public class HOGDescriptor {
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
+    /// - Returns: HOG feature vector (raveled N-D array of [NumBlocksY, NumBlocksX, CellsPerBlockY, CellsPerBlockX, Orientations]).
     public func getDescriptor(data: UnsafePointer<Double>,
                               width: Int,
                               height: Int) -> [Double] {
@@ -88,6 +89,7 @@ public class HOGDescriptor {
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
+    /// - Returns: HOG feature vector (raveled N-D array of [NumBlocksY, NumBlocksX, CellsPerBlockY, CellsPerBlockX, Orientations]).
     public func getDescriptor(data: UnsafePointer<UInt8>, width: Int, height: Int) -> [Double] {
         var doubleImage = [Double](repeating: 0, count: width*height)
         vDSP_vfltu8D(data, 1, &doubleImage, 1, UInt(doubleImage.count))
