@@ -158,24 +158,18 @@ public class HOGDescriptor {
         
         // accumulate to histograms
         var histograms = [Double](repeating: 0, count: numberOfCellY*numberOfCellX*orientations)
-        for y in 0..<height {
-            let cellY = y / pixelsPerCell.y
-            guard cellY < numberOfCellY else {
-                break
-            }
-            for x in 0..<width {
-                let cellX = x / pixelsPerCell.x
-                guard cellX < numberOfCellX else {
-                    continue
-                }
-                
-                var directionIndex = Int(grad[y*width+x])
-                while directionIndex >= orientations {
-                    directionIndex -= orientations
-                }
-                
+        for cellY in 0..<numberOfCellY {
+            for cellX in 0..<numberOfCellX {
                 let histogramIndex = (cellY * numberOfCellX + cellX) * orientations
-                histograms[histogramIndex + directionIndex] += magnitude[y*width+x]
+                for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
+                    for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
+                        var directionIndex = Int(grad[y*width+x])
+                        while directionIndex >= orientations {
+                            directionIndex -= orientations
+                        }
+                        histograms[histogramIndex + directionIndex] += magnitude[y*width+x]
+                    }
+                }
             }
         }
         
