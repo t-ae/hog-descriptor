@@ -38,13 +38,13 @@ public class HOGDescriptor {
     /// Create HOGFeatureExtractor with square cells/blocks.
     /// - Parameters:
     ///   - orientations: Number of orientation bins. default: 9
-    ///   - cellSpan: Size (in pixels) of a cell. default: 8
-    ///   - blockSpan: Number of cells in each block. default: 3
+    ///   - cellSpan: Size (in pixels) of a cell.
+    ///   - blockSpan: Number of cells in each block.
     ///   - normalization: Block normalization method. default: .l1
     ///   - transformSqrt: Apply power law compression to normalize the image before processing. default: false
     public convenience init(orientations: Int = 9,
-                            cellSpan: Int = 8,
-                            blockSpan: Int = 3,
+                            cellSpan: Int,
+                            blockSpan: Int,
                             normalization: NormalizationMethod = .l1,
                             transformSqrt: Bool = false) {
         self.init(orientations: orientations,
@@ -98,7 +98,7 @@ public class HOGDescriptor {
         return _getDescriptor(data: doubleImage, width: width, height: height)
     }
     
-    private func derivate(data: UnsafePointer<Double>, width: Int, height: Int) -> (x: [Double], y: [Double]) {
+    func derivate(data: UnsafePointer<Double>, width: Int, height: Int) -> (x: [Double], y: [Double]) {
         // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hog.py#L23-L44
         
         var gradX = [Double](repeating: 0, count: width*height)
