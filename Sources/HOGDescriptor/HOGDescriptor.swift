@@ -133,12 +133,70 @@ public class HOGDescriptor {
         return (gradX, gradY)
     }
     
+    func normalize(histograms: UnsafePointer<Double>,
+                   numberOfCells: (x: Int, y: Int),
+                   blocks: UnsafeMutablePointer<Double>,
+                   numberOfBlocks: (x: Int ,y: Int)) {
+        let cols = UInt(cellsPerBlock.x * orientations)
+        let rows = UInt(cellsPerBlock.y)
+        
+        let ta = UInt(numberOfCells.x*orientations)
+        let tc = UInt(cellsPerBlock.x*orientations)
+        
+        let blockSize = cellsPerBlock.y * cellsPerBlock.x * orientations
+        var sum: Double = 0
+        
+        var blockHead = blocks
+        for by in 0..<numberOfBlocks.y {
+            for bx in 0..<numberOfBlocks.x {
+                let cellHeadIndex = (by * numberOfCells.x + bx) * orientations
+                
+                // copy block
+                vDSP_mmovD(histograms + cellHeadIndex,
+                           blockHead,
+                           cols, rows,
+                           ta, tc)
+                
+                // normalize block
+                switch normalization {
+                case .l1:
+                    vDSP_sveD(blockHead, 1, &sum, UInt(blockSize))
+                    sum += eps
+                    vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
+                case .l1sqrt:
+                    vDSP_sveD(blockHead, 1, &sum, UInt(blockSize))
+                    sum += eps
+                    vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
+                    var _cnt = Int32(blockSize)
+                    vvsqrt(blockHead, blockHead, &_cnt)
+                case .l2:
+                    vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
+                    sum = sqrt(sum) + eps
+                    vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
+                case .l2Hys:
+                    vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
+                    sum = sqrt(sum) + eps
+                    vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
+                    
+                    var lower = 0.0
+                    var upper = 0.2
+                    vDSP_vclipD(blockHead, 1, &lower, &upper, blockHead, 1, UInt(blockSize))
+                    
+                    vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
+                    sum = sqrt(sum) + eps
+                    vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
+                }
+                
+                blockHead += blockSize
+            }
+        }
+    }
+    
     public func _getDescriptor(data: UnsafePointer<Double>,
                                width: Int,
                                height: Int) -> [Double] {
         
-        let numberOfCellX = width / pixelsPerCell.x
-        let numberOfCellY = height / pixelsPerCell.y
+        let numberOfCells = (x: width / pixelsPerCell.x, y: height / pixelsPerCell.y)
         
         // derivatives
         let (gradX, gradY) = derivate(data: data, width: width, height: height)
@@ -157,10 +215,13 @@ public class HOGDescriptor {
         vDSP_vdistD(gradX, 1, gradY, 1, &magnitude, 1, UInt(magnitude.count))
         
         // accumulate to histograms
-        var histograms = [Double](repeating: 0, count: numberOfCellY*numberOfCellX*orientations)
-        for cellY in 0..<numberOfCellY {
-            for cellX in 0..<numberOfCellX {
-                let histogramIndex = (cellY * numberOfCellX + cellX) * orientations
+        
+        // N-D array of [numberOfCells.y, numberOfCells.x, orientations]
+        var histograms = [Double](repeating: 0, count: numberOfCells.y*numberOfCells.x*orientations)
+        
+        for cellY in 0..<numberOfCells.y {
+            for cellX in 0..<numberOfCells.x {
+                let histogramIndex = (cellY * numberOfCells.x + cellX) * orientations
                 for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
                     for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
                         var directionIndex = Int(grad[y*width+x])
@@ -180,69 +241,17 @@ public class HOGDescriptor {
         //        vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
         
         // normalize
-        let numberOfBlocksX = numberOfCellX - cellsPerBlock.x + 1
-        let numberOfBlocksY = numberOfCellY - cellsPerBlock.y + 1
+        let numberOfBlocks = (x: numberOfCells.x - cellsPerBlock.x + 1,
+                              y: numberOfCells.y - cellsPerBlock.y + 1)
         
-        let featureCount = numberOfBlocksY*numberOfBlocksX*cellsPerBlock.y*cellsPerBlock.x*orientations
-        var normalizedHistogram = [Double](repeating: 0, count: featureCount)
+        let featureCount = numberOfBlocks.y*numberOfBlocks.x*cellsPerBlock.y*cellsPerBlock.x*orientations
+        // N-D array of [numberOfBlocks.y, numberOfBlocks.x, cellsPerBlock.y, cellsPerBlock.x, orientations]
+        var blocks = [Double](repeating: 0, count: featureCount)
         
-        normalizedHistogram.withUnsafeMutableBufferPointer {
-            let cols = UInt(cellsPerBlock.x * orientations)
-            let rows = UInt(cellsPerBlock.y)
-            
-            let ta = UInt(numberOfCellX*orientations)
-            let tc = UInt(cellsPerBlock.x*orientations)
-            
-            let blockSize = cellsPerBlock.y * cellsPerBlock.x * orientations
-            var sum: Double = 0
-            
-            var blockHead = $0.baseAddress!
-            for by in 0..<numberOfBlocksY {
-                for bx in 0..<numberOfBlocksX {
-                    let cellHeadIndex = (by * numberOfCellX + bx) * orientations
-                    
-                    // copy block
-                    vDSP_mmovD(&histograms + cellHeadIndex,
-                               blockHead,
-                               cols, rows,
-                               ta, tc)
-                    
-                    // normalize block
-                    switch normalization {
-                    case .l1:
-                        vDSP_sveD(blockHead, 1, &sum, UInt(blockSize))
-                        sum += eps
-                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
-                    case .l1sqrt:
-                        vDSP_sveD(blockHead, 1, &sum, UInt(blockSize))
-                        sum += eps
-                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
-                        var _cnt = Int32(blockSize)
-                        vvsqrt(blockHead, blockHead, &_cnt)
-                    case .l2:
-                        vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
-                        sum = sqrt(sum) + eps
-                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
-                    case .l2Hys:
-                        vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
-                        sum = sqrt(sum) + eps
-                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
-                        
-                        var lower = 0.0
-                        var upper = 0.2
-                        vDSP_vclipD(blockHead, 1, &lower, &upper, blockHead, 1, UInt(blockSize))
-                        
-                        vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
-                        sum = sqrt(sum) + eps
-                        vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
-                    }
-                    
-                    blockHead += blockSize
-                }
-            }
-        }
+        normalize(histograms: histograms, numberOfCells: numberOfCells,
+                  blocks: &blocks, numberOfBlocks: numberOfBlocks)
         
-        return normalizedHistogram
+        return blocks
     }
 }
 
