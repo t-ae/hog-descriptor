@@ -48,14 +48,14 @@ func loadAstronautGradY() throws -> [Double] {
 }
 
 func loadAstronautHOG_L1() throws -> [Double] {
-    // astro_l1 = np.load("/{SKIMAGEROOT}/skimage/feature/tests/astronaut_GRAY_hog_L1.npy")
+    // astro_l1 = np.load("/{SKIMAGEROOT}/skimage/data/astronaut_GRAY_hog_L1.npy")
     // np.savetxt("astronaut_hog_l1", astro_l1)
     let url = getTestResourceRootDir().appendingPathComponent("astronaut_hog_l1.txt")
     return try loadText(url: url)
 }
 
 func loadAstronautHOG_L2Hys() throws -> [Double] {
-    // astro_l2_hys = np.load("/{SKIMAGEROOT}/skimage/feature/tests/astronaut_GRAY_hog_L2-Hys.npy")
+    // astro_l2_hys = np.load("/{SKIMAGEROOT}/skimage/data/astronaut_GRAY_hog_L2-Hys.npy")
     // np.savetxt("astronaut_hog_l1", astro_l2_hys)
     let url = getTestResourceRootDir().appendingPathComponent("astronaut_hog_l2_hys.txt")
     return try loadText(url: url)
