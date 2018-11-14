@@ -87,12 +87,13 @@ final class HOGFeaturehogDescriptorTests: XCTestCase {
     }
     
     func testPerformanceL1() {
+        let width = 512
+        let height = 512
+        let image = try! loadAstronautGray()
+        
         let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l1)
         
         let iterations = 100
-        let width = 256
-        let height = 256
-        let image = (0..<width*height).map { _ in Double.random(in: 0..<255) }
         
         measure {
             for _ in 0..<iterations {
@@ -102,12 +103,13 @@ final class HOGFeaturehogDescriptorTests: XCTestCase {
     }
     
     func testPerformanceL1sqrt() {
+        let width = 512
+        let height = 512
+        let image = try! loadAstronautGray()
+        
         let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l1sqrt)
         
         let iterations = 100
-        let width = 256
-        let height = 256
-        let image = (0..<width*height).map { _ in Double.random(in: 0..<255) }
         
         measure {
             for _ in 0..<iterations {
@@ -117,12 +119,13 @@ final class HOGFeaturehogDescriptorTests: XCTestCase {
     }
     
     func testPerformanceL2() {
+        let width = 512
+        let height = 512
+        let image = try! loadAstronautGray()
+        
         let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l2)
         
         let iterations = 100
-        let width = 256
-        let height = 256
-        let image = (0..<width*height).map { _ in Double.random(in: 0..<255) }
         
         measure {
             for _ in 0..<iterations {
@@ -132,12 +135,13 @@ final class HOGFeaturehogDescriptorTests: XCTestCase {
     }
     
     func testPerformanceL2Hys() {
+        let width = 512
+        let height = 512
+        let image = try! loadAstronautGray()
+        
         let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l2Hys)
         
         let iterations = 100
-        let width = 256
-        let height = 256
-        let image = (0..<width*height).map { _ in Double.random(in: 0..<255) }
         
         measure {
             for _ in 0..<iterations {
