@@ -154,7 +154,7 @@ class SKImageCompatibilityTests: XCTestCase {
         let hog = hogDescriptor.getDescriptor(data: astro, width: 512, height: 512)
         
         let correct = try! loadAstronautHOG_L1()
-        XCTAssertEqual(hog, correct, accuracy: 1e-2)
+        XCTAssertEqual(hog, correct, accuracy: 1e-7)
     }
     
     func testAstronautL2Hys() {
@@ -168,6 +168,6 @@ class SKImageCompatibilityTests: XCTestCase {
         let hog = hogDescriptor.getDescriptor(data: astro, width: 512, height: 512)
         
         let correct = try! loadAstronautHOG_L2Hys()
-        XCTAssertEqual(hog, correct, accuracy: 1e-2)
+        XCTAssertEqual(hog, correct, accuracy: 1e-7)
     }
 }

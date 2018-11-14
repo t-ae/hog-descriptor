@@ -171,11 +171,11 @@ public class HOGDescriptor {
                     vvsqrt(blockHead, blockHead, &_cnt)
                 case .l2:
                     vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
-                    sum = sqrt(sum) + eps
+                    sum = sqrt(sum + eps*eps)
                     vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
                 case .l2Hys:
                     vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
-                    sum = sqrt(sum) + eps
+                    sum = sqrt(sum + eps*eps)
                     vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
                     
                     var lower = 0.0
@@ -183,7 +183,7 @@ public class HOGDescriptor {
                     vDSP_vclipD(blockHead, 1, &lower, &upper, blockHead, 1, UInt(blockSize))
                     
                     vDSP_svesqD(blockHead, 1, &sum, UInt(blockSize))
-                    sum = sqrt(sum) + eps
+                    sum = sqrt(sum + eps*eps)
                     vDSP_vsdivD(blockHead, 1, &sum, blockHead, 1, UInt(blockSize))
                 }
                 
@@ -236,9 +236,10 @@ public class HOGDescriptor {
         
         // Scale histograms
         // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
-        // Since it's only for visualize feature, final output doesn't differ without this.
-        // var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
-        // vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
+        // Basically it's helpful only for visualization.
+        // But, since we add `eps` while normalization, the result will have slight differences from skimage's without this.
+        var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
+        vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
         
         // normalize
         let numberOfBlocks = (x: numberOfCells.x - cellsPerBlock.x + 1,
