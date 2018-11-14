@@ -130,4 +130,44 @@ class SKImageCompatibilityTests: XCTestCase {
         
         XCTAssertEqual(f, size_16_16_ori_9_ppc_4_4_bpc_3_3_L2_Hys, accuracy: eps)
     }
+    func testAstronautGradXY() {
+        let astro = try! loadAstronautGray()
+        let hogDescriptor = HOGDescriptor(orientations: 9,
+                                          pixelsPerCell: (8, 8),
+                                          cellsPerBlock: (3, 3),
+                                          normalization: .l1)
+        
+        let (gradX, gradY) = hogDescriptor.derivate(data: astro, width: 512, height: 512)
+        
+        XCTAssertEqual(gradX, try! loadAstronautGradX())
+        XCTAssertEqual(gradY, try! loadAstronautGradY())
+    }
+    
+    func testAstronautL1() {
+        let astro = try! loadAstronautGray()
+        
+        let hogDescriptor = HOGDescriptor(orientations: 9,
+                                          pixelsPerCell: (8, 8),
+                                          cellsPerBlock: (3, 3),
+                                          normalization: .l1)
+        
+        let hog = hogDescriptor.getDescriptor(data: astro, width: 512, height: 512)
+        
+        let correct = try! loadAstronautHOG_L1()
+        XCTAssertEqual(hog, correct, accuracy: 1e-2)
+    }
+    
+    func testAstronautL2Hys() {
+        let astro = try! loadAstronautGray()
+        
+        let hogDescriptor = HOGDescriptor(orientations: 9,
+                                          pixelsPerCell: (8, 8),
+                                          cellsPerBlock: (3, 3),
+                                          normalization: .l2Hys)
+        
+        let hog = hogDescriptor.getDescriptor(data: astro, width: 512, height: 512)
+        
+        let correct = try! loadAstronautHOG_L2Hys()
+        XCTAssertEqual(hog, correct, accuracy: 1e-2)
+    }
 }
