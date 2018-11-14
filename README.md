@@ -8,14 +8,15 @@ Get [HOG Descriptor](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradien
 let width, height: Int
 let imageBuffer: [Double] // contains gray scale, row major pixel values
 
-let hogDescriptor = HOGDescriptor(pixelsPerCell: pixelsPerCell,
-                                  cellsPerBlock: cellsPerBlock,
-                                  orientation: orientations,
-                                  normalization: normalization)
+let hogDescriptor = HOGDescriptor(orientations: 9,
+                                  pixelsPerCell: (8, 8),
+                                  cellsPerBlock: (3, 3),
+                                  normalization: .l2Hys)
 
-let features = hogDescriptor.getDescriptor(data: imageBuffer,
-                                           width: width, 
-                                           height: height)
+// Raveled N-D array of shape [NumBlocksY, NumBlocksX, cellsPerBlock.y, cellsPerBlock.x, Orientations].
+let features: [Double] = hogDescriptor.getDescriptor(data: imageBuffer,
+                                                           width: width, 
+                                                           height: height)
 ```
 
 ## Compatible with scikit-image
