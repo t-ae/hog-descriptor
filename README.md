@@ -21,7 +21,7 @@ let features = hogDescriptor.getDescriptor(data: imageBuffer,
 ## Compatible with scikit-image
 The output is equivalent to [scikit-image](https://github.com/scikit-image/scikit-image)'s `skimage.feature.hog`.
 
-Check [test.py](https://github.com/t-ae/hog-feature-extractor/blob/master/test.py) and [SKImageCompatibilityTests.swift](SKImageCompatibilityTests.swift) what args you should pass to.
+Check [test.py](https://github.com/t-ae/hog-feature-extractor/blob/master/test.py) and [SKImageCompatibilityTests.swift](https://github.com/t-ae/hog-descriptor/blob/master/Tests/HOGDescriptorTests/SKImageCompatibilityTests.swift) what args you should pass to.
 
 ## License
 
