@@ -16,7 +16,7 @@ public class HOGDescriptor {
     
     public let eps = 1e-5
     
-    /// Create HOGFeatureExtractor.
+    /// Create HOGDescriptor.
     /// - Parameters:
     ///   - orientation: Number of orientation bins. default: 9
     ///   - pixelsPerCell: Size (in pixels) of a cell. default: (8, 8)
@@ -35,7 +35,7 @@ public class HOGDescriptor {
         self.transformSqrt = transformSqrt
     }
     
-    /// Create HOGFeatureExtractor with square cells/blocks.
+    /// Create HOGDescriptor with square cells/blocks.
     /// - Parameters:
     ///   - orientations: Number of orientation bins. default: 9
     ///   - cellSpan: Size (in pixels) of a cell.
