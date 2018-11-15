@@ -21,7 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		A734804F219A80F7004C00E7 /* GradientCalculationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A734804E219A80F7004C00E7 /* GradientCalculationTests.swift */; };
+		A734804F219A80F7004C00E7 /* PerformanceComparisonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A734804E219A80F7004C00E7 /* PerformanceComparisonTests.swift */; };
 		A76499C9219BF0D000D65CA6 /* AstronautGray.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73480B7219BE7AD004C00E7 /* AstronautGray.swift */; };
 		OBJ_36 /* HOGDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* HOGDescriptor.swift */; };
 		OBJ_43 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
@@ -61,7 +61,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A734804E219A80F7004C00E7 /* GradientCalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientCalculationTests.swift; sourceTree = "<group>"; };
+		A734804E219A80F7004C00E7 /* PerformanceComparisonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceComparisonTests.swift; sourceTree = "<group>"; };
 		A73480B7219BE7AD004C00E7 /* AstronautGray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AstronautGray.swift; sourceTree = "<group>"; };
 		"HOGDescriptor::HOGDescriptor::Product" /* HOGDescriptor.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = HOGDescriptor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"HOGDescriptor::HOGDescriptorTests::Product" /* HOGDescriptorTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = HOGDescriptorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -119,7 +119,7 @@
 				OBJ_14 /* SKImageOutput */,
 				OBJ_26 /* XCTAssert+Array.swift */,
 				OBJ_27 /* XCTestManifests.swift */,
-				A734804E219A80F7004C00E7 /* GradientCalculationTests.swift */,
+				A734804E219A80F7004C00E7 /* PerformanceComparisonTests.swift */,
 			);
 			name = HOGDescriptorTests;
 			path = Tests/HOGDescriptorTests;
@@ -289,7 +289,7 @@
 				OBJ_61 /* F.swift in Sources */,
 				OBJ_62 /* G.swift in Sources */,
 				A76499C9219BF0D000D65CA6 /* AstronautGray.swift in Sources */,
-				A734804F219A80F7004C00E7 /* GradientCalculationTests.swift in Sources */,
+				A734804F219A80F7004C00E7 /* PerformanceComparisonTests.swift in Sources */,
 				OBJ_63 /* H.swift in Sources */,
 				OBJ_64 /* I.swift in Sources */,
 				OBJ_65 /* J.swift in Sources */,
