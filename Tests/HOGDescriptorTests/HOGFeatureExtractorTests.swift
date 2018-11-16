@@ -86,69 +86,6 @@ final class HOGFeaturehogDescriptorTests: XCTestCase {
         }
     }
     
-    func testPerformanceL1() {
-        let width = 512
-        let height = 512
-        let image = try! loadAstronautGray()
-        
-        let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l1)
-        
-        let iterations = 100
-        
-        measure {
-            for _ in 0..<iterations {
-                _ = hogDescriptor.getDescriptor(data: image, width: width, height: height)
-            }
-        }
-    }
-    
-    func testPerformanceL1sqrt() {
-        let width = 512
-        let height = 512
-        let image = try! loadAstronautGray()
-        
-        let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l1sqrt)
-        
-        let iterations = 100
-        
-        measure {
-            for _ in 0..<iterations {
-                _ = hogDescriptor.getDescriptor(data: image, width: width, height: height)
-            }
-        }
-    }
-    
-    func testPerformanceL2() {
-        let width = 512
-        let height = 512
-        let image = try! loadAstronautGray()
-        
-        let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l2)
-        
-        let iterations = 100
-        
-        measure {
-            for _ in 0..<iterations {
-                _ = hogDescriptor.getDescriptor(data: image, width: width, height: height)
-            }
-        }
-    }
-    
-    func testPerformanceL2Hys() {
-        let width = 512
-        let height = 512
-        let image = try! loadAstronautGray()
-        
-        let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l2Hys)
-        
-        let iterations = 100
-        
-        measure {
-            for _ in 0..<iterations {
-                _ = hogDescriptor.getDescriptor(data: image, width: width, height: height)
-            }
-        }
-    }
     
     static var allTests = [
         ("testScaleInvariance", testScaleInvariance),

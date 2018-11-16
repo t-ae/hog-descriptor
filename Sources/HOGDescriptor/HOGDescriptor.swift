@@ -85,9 +85,11 @@ public class HOGDescriptor {
     
     /// Get HOG descriptor from gray scale image.
     /// - Parameters:
-    ///   - data: Head of pixel values of gray scale image, row major order.
+    ///   - data: Pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
+    /// - Precondition:
+    ///   - data.count == width*height
     /// - Returns: HOG feature vector (raveled N-D array of [NumBlocksY, NumBlocksX, CellsPerBlockY, CellsPerBlockX, Orientations]).
     public func getDescriptor(data: [Double],
                               width: Int,
@@ -102,27 +104,27 @@ public class HOGDescriptor {
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
+    /// - Precondition:
+    ///   - data.count == width*height
     /// - Returns: HOG feature vector (raveled N-D array of [NumBlocksY, NumBlocksX, CellsPerBlockY, CellsPerBlockX, Orientations]).
     public func getDescriptor(data: UnsafeBufferPointer<Double>,
                               width: Int,
                               height: Int) -> [Double] {
         var descriptor = [Double](repeating: 0, count: getDescriptorSize(width: width, height: height))
         var workspace = [Double](repeating: 0, count: getWorkspaceSize(width: width, height: height))
-        descriptor.withUnsafeMutableBufferPointer { descriptor in
-            workspace.withUnsafeMutableBufferPointer { workspace in
-                if transformSqrt {
-                    var transformed = [Double](repeating: 0, count: data.count)
-                    var count = Int32(transformed.count)
-                    vvsqrt(&transformed, data.baseAddress!, &count)
-                    transformed.withUnsafeBufferPointer {
-                        getDescriptor(data: $0, width: width, height: height,
-                                      output: descriptor, workspace: workspace)
-                    }
-                } else {
-                    getDescriptor(data: data, width: width, height: height,
-                                  output: descriptor, workspace: workspace)
-                }
-            }
+        
+        if transformSqrt {
+            var transformed = [Double](repeating: 0, count: data.count)
+            var count = Int32(transformed.count)
+            vvsqrt(&transformed, data.baseAddress!, &count)
+            getDescriptor(data: .init(start: transformed, count: transformed.count),
+                          width: width, height: height,
+                          output: .init(start: &descriptor, count: descriptor.count),
+                          workspace: .init(start: &workspace, count: workspace.count))
+        } else {
+            getDescriptor(data: data, width: width, height: height,
+                          output: .init(start: &descriptor, count: descriptor.count),
+                          workspace: .init(start: &workspace, count: workspace.count))
         }
         
         return descriptor
@@ -130,9 +132,11 @@ public class HOGDescriptor {
     
     /// Get HOG descriptor from gray scale image.
     /// - Parameters:
-    ///   - data: Head of pixel values of gray scale image, row major order.
+    ///   - data: Pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
+    /// - Precondition:
+    ///   - data.count == width*height
     /// - Returns: HOG feature vector (raveled N-D array of [NumBlocksY, NumBlocksX, CellsPerBlockY, CellsPerBlockX, Orientations]).
     public func getDescriptor(data: [UInt8],
                               width: Int,
@@ -147,6 +151,8 @@ public class HOGDescriptor {
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
+    /// - Precondition:
+    ///   - data.count == width*height
     /// - Returns: HOG feature vector (raveled N-D array of [NumBlocksY, NumBlocksX, CellsPerBlockY, CellsPerBlockX, Orientations]).
     public func getDescriptor(data: UnsafeBufferPointer<UInt8>, width: Int, height: Int) -> [Double] {
         var doubleImage = [Double](repeating: 0, count: width*height)
@@ -159,19 +165,17 @@ public class HOGDescriptor {
         
         var descriptor = [Double](repeating: 0, count: getDescriptorSize(width: width, height: height))
         var workspace = [Double](repeating: 0, count: getWorkspaceSize(width: width, height: height))
-        doubleImage.withUnsafeBufferPointer { doubleImage in
-            descriptor.withUnsafeMutableBufferPointer { descriptor in
-                workspace.withUnsafeMutableBufferPointer { workspace in
-                    getDescriptor(data: doubleImage, width: width, height: height,
-                                  output: descriptor, workspace: workspace)
-                }
-            }
-        }
+        getDescriptor(data: .init(start: doubleImage, count: doubleImage.count),
+                      width: width, height: height,
+                      output: .init(start: &descriptor, count: descriptor.count),
+                      workspace: .init(start: &workspace, count: workspace.count))
         
         return descriptor
     }
     
     /// Get HOG descriptor from gray scale image.
+    /// - Note: This method itself doesn't allocate memories.
+    /// So if you calculate HOG repeatedly, you can gain slight performance improvement with this.
     /// - Parameters:
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
@@ -188,9 +192,10 @@ public class HOGDescriptor {
                               output: UnsafeMutableBufferPointer<Double>,
                               workspace: UnsafeMutableBufferPointer<Double>) {
         let workspaceSize = getWorkspaceSize(width: width, height: height)
+        let descriptorSize = getDescriptorSize(width: width, height: height)
         
         precondition(data.count == width*height)
-        precondition(output.count >= getDescriptorSize(width: width, height: height))
+        precondition(output.count >= descriptorSize)
         precondition(workspace.count >= workspaceSize)
         
         // 0 clear
@@ -198,21 +203,24 @@ public class HOGDescriptor {
         
         // derivatives
         let gradSize = width*height
-        let gradY = UnsafeMutableBufferPointer(rebasing: workspace[gradSize...])
-        let gradX = UnsafeMutableBufferPointer(rebasing: gradY[gradSize...])
+        let gradY = UnsafeMutableBufferPointer(rebasing: workspace[start: gradSize, count: gradSize])
+        let gradX = UnsafeMutableBufferPointer(rebasing: workspace[start: gradSize*2, count: gradSize])
         differentiate(data: data, width: width, height: height, gradX: gradX, gradY: gradY)
         
         // calculate gradient directions and magnitudes
-        let grad = workspace
+        let grad = UnsafeMutableBufferPointer(rebasing: workspace[start: 0, count: gradSize])
         do {
             var _cnt = Int32(gradSize)
             vvatan2(grad.baseAddress!, gradY.baseAddress!, gradX.baseAddress!, &_cnt) // [-pi, pi]
             var multiplier = Double(orientations) / .pi
             var adder = Double(orientations)
-            vDSP_vsmsaD(grad.baseAddress!, 1, &multiplier, &adder, grad.baseAddress!, 1, UInt(gradSize)) // [0, 2*orientation]
+            vDSP_vsmsaD(grad.baseAddress!, 1,
+                        &multiplier, &adder,
+                        grad.baseAddress!, 1,
+                        UInt(gradSize)) // [0, 2*orientation]
         }
         
-        let magnitude = UnsafeMutableBufferPointer(rebasing: workspace[gradSize...])
+        let magnitude = UnsafeMutableBufferPointer(rebasing: workspace[start: gradSize, count: gradSize])
         vDSP_vdistD(gradY.baseAddress!, 1,
                     gradX.baseAddress!, 1,
                     magnitude.baseAddress!, 1,
@@ -223,10 +231,14 @@ public class HOGDescriptor {
         
         // N-D array of [numberOfCells.y, numberOfCells.x, orientations]
         let numberOfCells = (x: width / pixelsPerCell.x, y: height / pixelsPerCell.y)
-        let histograms = UnsafeMutableBufferPointer(rebasing: workspace[(gradSize*2)...])
         let histogramsSize = numberOfCells.y * numberOfCells.x * orientations
+        let histograms = UnsafeMutableBufferPointer(rebasing: workspace[start: (gradSize*2),
+                                                                        count: histogramsSize])
+        
+        // 0 clear
         memset(histograms.baseAddress!, 0, histogramsSize*MemoryLayout<Double>.size)
         
+        // weighted vote
         for cellY in 0..<numberOfCells.y {
             for cellX in 0..<numberOfCells.x {
                 let headIndex = (cellY * numberOfCells.x + cellX) * orientations
@@ -261,7 +273,7 @@ public class HOGDescriptor {
         
         normalize(histograms: UnsafeBufferPointer(histograms),
                   numberOfCells: numberOfCells,
-                  blocks: output,
+                  blocks: .init(rebasing: output[..<descriptorSize]),
                   numberOfBlocks: numberOfBlocks)
     }
     
@@ -273,7 +285,9 @@ public class HOGDescriptor {
                        gradY: UnsafeMutableBufferPointer<Double>) {
         // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hog.py#L23-L44
         
-        // [empty, gradY, gradX]
+        assert(gradX.count == width*height)
+        assert(gradY.count == width*height)
+        
         do {
             var dpLeft = data.baseAddress!
             var dpRight = data.baseAddress!.advanced(by: 2)
@@ -302,6 +316,10 @@ public class HOGDescriptor {
                    numberOfCells: (x: Int, y: Int),
                    blocks: UnsafeMutableBufferPointer<Double>,
                    numberOfBlocks: (x: Int ,y: Int)) {
+        
+        assert(histograms.count == numberOfCells.y*numberOfCells.x*orientations)
+        assert(blocks.count == numberOfBlocks.y*numberOfBlocks.x*cellsPerBlock.y*cellsPerBlock.x*orientations)
+        
         let cols = UInt(cellsPerBlock.x * orientations)
         let rows = UInt(cellsPerBlock.y)
         
@@ -379,3 +397,14 @@ public class HOGDescriptor {
     }
 }
 
+extension UnsafeBufferPointer {
+    subscript(start start: Int, count count: Int) -> Slice<UnsafeBufferPointer<Element>> {
+        return self[start..<start+count]
+    }
+}
+
+extension UnsafeMutableBufferPointer {
+    subscript(start start: Int, count count: Int) -> Slice<UnsafeMutableBufferPointer<Element>> {
+        return self[start..<start+count]
+    }
+}
