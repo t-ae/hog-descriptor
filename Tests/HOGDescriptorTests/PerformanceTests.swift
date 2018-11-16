@@ -30,7 +30,7 @@ class PerformanceTests: XCTestCase {
                 _ = image.withUnsafeBufferPointer { image in
                     output.withUnsafeMutableBufferPointer { output in
                         workspace.withUnsafeMutableBufferPointer { workspace in
-                            hogDescriptor.getDescriptor(data: image, width: width, height: height, output: output, workspace: workspace)
+                            hogDescriptor.getDescriptor(data: image, width: width, height: height, descriptor: output, workspace: workspace)
                         }
                     }
                 }

@@ -119,11 +119,11 @@ public class HOGDescriptor {
             vvsqrt(&transformed, data.baseAddress!, &count)
             getDescriptor(data: .init(start: transformed, count: transformed.count),
                           width: width, height: height,
-                          output: .init(start: &descriptor, count: descriptor.count),
+                          descriptor: .init(start: &descriptor, count: descriptor.count),
                           workspace: .init(start: &workspace, count: workspace.count))
         } else {
             getDescriptor(data: data, width: width, height: height,
-                          output: .init(start: &descriptor, count: descriptor.count),
+                          descriptor: .init(start: &descriptor, count: descriptor.count),
                           workspace: .init(start: &workspace, count: workspace.count))
         }
         
@@ -167,7 +167,7 @@ public class HOGDescriptor {
         var workspace = [Double](repeating: 0, count: getWorkspaceSize(width: width, height: height))
         getDescriptor(data: .init(start: doubleImage, count: doubleImage.count),
                       width: width, height: height,
-                      output: .init(start: &descriptor, count: descriptor.count),
+                      descriptor: .init(start: &descriptor, count: descriptor.count),
                       workspace: .init(start: &workspace, count: workspace.count))
         
         return descriptor
@@ -180,7 +180,7 @@ public class HOGDescriptor {
     ///   - data: Head of pixel values of gray scale image, row major order.
     ///   - width: Width of image.
     ///   - height: Height of image.
-    ///   - output: output of HOG descriptor.
+    ///   - descriptor: output of HOG descriptor.
     ///   - workspace: workspace.
     /// - Precondition:
     ///   - data.count == width*height
@@ -189,13 +189,13 @@ public class HOGDescriptor {
     public func getDescriptor(data: UnsafeBufferPointer<Double>,
                               width: Int,
                               height: Int,
-                              output: UnsafeMutableBufferPointer<Double>,
+                              descriptor: UnsafeMutableBufferPointer<Double>,
                               workspace: UnsafeMutableBufferPointer<Double>) {
         let workspaceSize = getWorkspaceSize(width: width, height: height)
         let descriptorSize = getDescriptorSize(width: width, height: height)
         
         precondition(data.count == width*height)
-        precondition(output.count >= descriptorSize)
+        precondition(descriptor.count >= descriptorSize)
         precondition(workspace.count >= workspaceSize)
         
         // 0 clear
@@ -273,7 +273,7 @@ public class HOGDescriptor {
         
         normalize(histograms: UnsafeBufferPointer(histograms),
                   numberOfCells: numberOfCells,
-                  blocks: .init(rebasing: output[..<descriptorSize]),
+                  blocks: .init(rebasing: descriptor[..<descriptorSize]),
                   numberOfBlocks: numberOfBlocks)
     }
     
