@@ -65,6 +65,7 @@ public class HOGDescriptor {
         return numberOfBlocksY*numberOfBlocksX*cellsPerBlock.y*cellsPerBlock.x*orientations
     }
     
+    /// Get necessary workspace size for specified width/size image.
     public func getWorkspaceSize(width: Int, height: Int) -> Int {
         let numberOfCellX = width / pixelsPerCell.x
         let numberOfCellY = height / pixelsPerCell.y
@@ -119,8 +120,8 @@ public class HOGDescriptor {
         var workspace = [Double](repeating: 0, count: getWorkspaceSize(width: width, height: height))
         descriptor.withUnsafeMutableBufferPointer { descriptor in
             workspace.withUnsafeMutableBufferPointer { workspace in
-                _getDescriptor(data: doubleImage, width: width, height: height,
-                               output: descriptor, workspace: workspace)
+                getDescriptor(data: doubleImage, width: width, height: height,
+                              output: descriptor, workspace: workspace)
             }
         }
         
@@ -161,13 +162,107 @@ public class HOGDescriptor {
         doubleImage.withUnsafeBufferPointer { doubleImage in
             descriptor.withUnsafeMutableBufferPointer { descriptor in
                 workspace.withUnsafeMutableBufferPointer { workspace in
-                    _getDescriptor(data: doubleImage, width: width, height: height,
-                                   output: descriptor, workspace: workspace)
+                    getDescriptor(data: doubleImage, width: width, height: height,
+                                  output: descriptor, workspace: workspace)
                 }
             }
         }
         
         return descriptor
+    }
+    
+    /// Get HOG descriptor from gray scale image.
+    /// - Parameters:
+    ///   - data: Head of pixel values of gray scale image, row major order.
+    ///   - width: Width of image.
+    ///   - height: Height of image.
+    ///   - output: output of HOG descriptor.
+    ///   - workspace: workspace.
+    /// - Precondition:
+    ///   - data.count == width*height
+    ///   - output.count >= getDescriptorSize(width: width, height: height)
+    ///   - workspace.count >= getWorkspaceSize(width: width, height: height)
+    public func getDescriptor(data: UnsafeBufferPointer<Double>,
+                              width: Int,
+                              height: Int,
+                              output: UnsafeMutableBufferPointer<Double>,
+                              workspace: UnsafeMutableBufferPointer<Double>) {
+        let workspaceSize = getWorkspaceSize(width: width, height: height)
+        
+        precondition(data.count == width*height)
+        precondition(output.count >= getDescriptorSize(width: width, height: height))
+        precondition(workspace.count >= workspaceSize)
+        
+        // 0 clear
+        memset(workspace.baseAddress!, 0, workspaceSize*MemoryLayout<Double>.size)
+        
+        // derivatives
+        let gradSize = width*height
+        let gradY = UnsafeMutableBufferPointer(rebasing: workspace[gradSize...])
+        let gradX = UnsafeMutableBufferPointer(rebasing: gradY[gradSize...])
+        derivate(data: data, width: width, height: height, gradX: gradX, gradY: gradY)
+        
+        // calculate gradient directions and magnitudes
+        let grad = workspace
+        do {
+            var _cnt = Int32(gradSize)
+            vvatan2(grad.baseAddress!, gradY.baseAddress!, gradX.baseAddress!, &_cnt) // [-pi, pi]
+            var multiplier = Double(orientations) / .pi
+            var adder = Double(orientations)
+            vDSP_vsmsaD(grad.baseAddress!, 1, &multiplier, &adder, grad.baseAddress!, 1, UInt(gradSize)) // [0, 2*orientation]
+        }
+        
+        let magnitude = UnsafeMutableBufferPointer(rebasing: workspace[gradSize...])
+        vDSP_vdistD(gradY.baseAddress!, 1,
+                    gradX.baseAddress!, 1,
+                    magnitude.baseAddress!, 1,
+                    UInt(gradSize))
+        
+        
+        // accumulate to histograms
+        
+        // N-D array of [numberOfCells.y, numberOfCells.x, orientations]
+        let numberOfCells = (x: width / pixelsPerCell.x, y: height / pixelsPerCell.y)
+        let histograms = UnsafeMutableBufferPointer(rebasing: workspace[(gradSize*2)...])
+        let histogramsSize = numberOfCells.y * numberOfCells.x * orientations
+        memset(histograms.baseAddress!, 0, histogramsSize*MemoryLayout<Double>.size)
+        
+        for cellY in 0..<numberOfCells.y {
+            for cellX in 0..<numberOfCells.x {
+                let headIndex = (cellY * numberOfCells.x + cellX) * orientations
+                let histogramHead = UnsafeMutableBufferPointer(rebasing: histograms[headIndex...])
+                for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
+                    for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
+                        var directionIndex = Int(grad[y*width+x])
+                        while directionIndex >= orientations {
+                            directionIndex -= orientations
+                        }
+                        histogramHead[directionIndex] += magnitude[y*width+x]
+                    }
+                }
+            }
+        }
+        
+        // Scale histograms
+        // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
+        // Basically it's helpful only for visualization.
+        // But, since we add `eps` while normalization, the result will have slight differences from skimage's without this.
+        var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
+        vDSP_vsdivD(histograms.baseAddress!, 1,
+                    &divisor,
+                    histograms.baseAddress!, 1,
+                    UInt(histogramsSize))
+        
+        // normalize
+        let numberOfBlocks = (x: numberOfCells.x - cellsPerBlock.x + 1,
+                              y: numberOfCells.y - cellsPerBlock.y + 1)
+        
+        // N-D array of [numberOfBlocks.y, numberOfBlocks.x, cellsPerBlock.y, cellsPerBlock.x, orientations]
+        
+        normalize(histograms: UnsafeBufferPointer(histograms),
+                  numberOfCells: numberOfCells,
+                  blocks: output,
+                  numberOfBlocks: numberOfBlocks)
     }
     
     func derivate(data: UnsafeBufferPointer<Double>,
@@ -268,89 +363,6 @@ public class HOGDescriptor {
                 blockHead = UnsafeMutableBufferPointer(rebasing: blockHead[blockSize...])
             }
         }
-    }
-    
-    public func _getDescriptor(data: UnsafeBufferPointer<Double>,
-                               width: Int,
-                               height: Int,
-                               output: UnsafeMutableBufferPointer<Double>,
-                               workspace: UnsafeMutableBufferPointer<Double>) {
-        let workspaceSize = getWorkspaceSize(width: width, height: height)
-        let numberOfCells = (x: width / pixelsPerCell.x, y: height / pixelsPerCell.y)
-        let gradSize = width*height
-        
-        assert(data.count == width*height)
-        assert(output.count == getDescriptorSize(width: width, height: height))
-        assert(workspace.count >= workspaceSize)
-        
-        // 0 clear
-        memset(workspace.baseAddress!, 0, workspaceSize*MemoryLayout<Double>.size)
-        
-        // derivatives
-        let gradY = UnsafeMutableBufferPointer(rebasing: workspace[gradSize...])
-        let gradX = UnsafeMutableBufferPointer(rebasing: gradY[gradSize...])
-        derivate(data: data, width: width, height: height, gradX: gradX, gradY: gradY)
-        
-        // calculate gradient directions and magnitudes
-        let grad = workspace
-        do {
-            var _cnt = Int32(gradSize)
-            vvatan2(grad.baseAddress!, gradY.baseAddress!, gradX.baseAddress!, &_cnt) // [-pi, pi]
-            var multiplier = Double(orientations) / .pi
-            var adder = Double(orientations)
-            vDSP_vsmsaD(grad.baseAddress!, 1, &multiplier, &adder, grad.baseAddress!, 1, UInt(gradSize)) // [0, 2*orientation]
-        }
-        
-        let magnitude = UnsafeMutableBufferPointer(rebasing: workspace[gradSize...])
-        vDSP_vdistD(gradY.baseAddress!, 1,
-                    gradX.baseAddress!, 1,
-                    magnitude.baseAddress!, 1,
-                    UInt(gradSize))
-        
-        
-        // accumulate to histograms
-        
-        // N-D array of [numberOfCells.y, numberOfCells.x, orientations]
-        let histograms = UnsafeMutableBufferPointer(rebasing: workspace[(gradSize*2)...])
-        let histogramsSize = numberOfCells.y * numberOfCells.x * orientations
-        memset(histograms.baseAddress!, 0, histogramsSize*MemoryLayout<Double>.size)
-        
-        for cellY in 0..<numberOfCells.y {
-            for cellX in 0..<numberOfCells.x {
-                let headIndex = (cellY * numberOfCells.x + cellX) * orientations
-                let histogramHead = UnsafeMutableBufferPointer(rebasing: histograms[headIndex...])
-                for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
-                    for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
-                        var directionIndex = Int(grad[y*width+x])
-                        while directionIndex >= orientations {
-                            directionIndex -= orientations
-                        }
-                        histogramHead[directionIndex] += magnitude[y*width+x]
-                    }
-                }
-            }
-        }
-        
-        // Scale histograms
-        // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
-        // Basically it's helpful only for visualization.
-        // But, since we add `eps` while normalization, the result will have slight differences from skimage's without this.
-        var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
-        vDSP_vsdivD(histograms.baseAddress!, 1,
-                    &divisor,
-                    histograms.baseAddress!, 1,
-                    UInt(histogramsSize))
-        
-        // normalize
-        let numberOfBlocks = (x: numberOfCells.x - cellsPerBlock.x + 1,
-                              y: numberOfCells.y - cellsPerBlock.y + 1)
-        
-        // N-D array of [numberOfBlocks.y, numberOfBlocks.x, cellsPerBlock.y, cellsPerBlock.x, orientations]
-        
-        normalize(histograms: UnsafeBufferPointer(histograms),
-                  numberOfCells: numberOfCells,
-                  blocks: output,
-                  numberOfBlocks: numberOfBlocks)
     }
     
     private func dumpWorkspace(_ workspace: UnsafePointer<Double>, width: Int, height: Int) {
