@@ -15,8 +15,8 @@ let hogDescriptor = HOGDescriptor(orientations: 9,
 
 // Raveled N-D array of shape [NumBlocksY, NumBlocksX, cellsPerBlock.y, cellsPerBlock.x, Orientations].
 let features: [Double] = hogDescriptor.getDescriptor(data: imageBuffer,
-                                                           width: width, 
-                                                           height: height)
+                                                     width: width, 
+                                                     height: height)
 ```
 
 ## Compatible with scikit-image
