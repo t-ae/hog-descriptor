@@ -23,13 +23,13 @@ public class HOGDescriptor {
     ///   - cellsPerBlock: Number of cells in each block. default: (3, 3)
     ///   - normalization: Block normalization method. default: .l1
     ///   - transformSqrt: Apply power law compression to normalize the image before processing. default: false
-    /// - Precondition: orientations*2 <= Int8.max (Internally use Int8 to vote)
+    /// - Precondition: orientations*2 <= UInt8.max (Internally using UInt8 for voting)
     public init(orientations: Int = 9,
                 pixelsPerCell: (x: Int, y: Int) = (8, 8),
                 cellsPerBlock: (x: Int, y: Int) = (3, 3),
                 normalization: NormalizationMethod = .l1,
                 transformSqrt: Bool = false) {
-        precondition(orientations*2 <= Int8.max)
+        precondition(orientations*2 <= UInt8.max)
         
         self.pixelsPerCell = pixelsPerCell
         self.cellsPerBlock = cellsPerBlock
@@ -45,7 +45,7 @@ public class HOGDescriptor {
     ///   - blockSpan: Number of cells in each block.
     ///   - normalization: Block normalization method. default: .l1
     ///   - transformSqrt: Apply power law compression to normalize the image before processing. default: false
-    /// - Precondition: orientation*2 <= Int8.max (Internally use Int8 to vote)
+    /// - Precondition: orientation*2 <= UInt8.max (Internally using UInt8 for voting)
     public convenience init(orientations: Int = 9,
                             cellSpan: Int,
                             blockSpan: Int,
@@ -70,7 +70,7 @@ public class HOGDescriptor {
     }
     
     /// Get necessary workspace sizes for specified width/height image.
-    public func getWorkspaceSizes(width: Int, height: Int) -> (double: Int, int8: Int) {
+    public func getWorkspaceSizes(width: Int, height: Int) -> (double: Int, uint8: Int) {
         let numberOfCellX = width / pixelsPerCell.x
         let numberOfCellY = height / pixelsPerCell.y
         
@@ -81,17 +81,16 @@ public class HOGDescriptor {
         
         // 1. [empty, gradY, gradX]
         // 2. [grad, gradY, gradX]
-        // 3. [magnitude, gradY, grad]
+        // 3. [magnitude, gradY, gradX]
         // 4. [magnitude, histograms]
-        
         return (max(3*gradSize, gradSize + histogramsSize), gradSize)
     }
     
     /// Create workspaces.
-    public func createWorkspaces(width: Int, height: Int) -> (double: [Double], int8: [Int8]) {
+    public func createWorkspaces(width: Int, height: Int) -> (double: [Double], uint8: [UInt8]) {
         let sizes = getWorkspaceSizes(width: width, height: height)
         return ([Double](repeating: 0, count: sizes.double),
-                [Int8](repeating: 0, count: sizes.int8))
+                [UInt8](repeating: 0, count: sizes.uint8))
     }
     
     /// Get HOG descriptor from gray scale image.
@@ -202,13 +201,13 @@ public class HOGDescriptor {
                               width: Int,
                               height: Int,
                               descriptor: UnsafeMutableBufferPointer<Double>,
-                              workspaces: inout (double: [Double], int8: [Int8])) {
+                              workspaces: inout (double: [Double], uint8: [UInt8])) {
         getDescriptor(data: data,
                       width: width,
                       height: height,
                       descriptor: descriptor,
                       workspace1: .init(start: &workspaces.double, count: workspaces.double.count),
-                      workspace2: .init(start: &workspaces.int8, count: workspaces.int8.count))
+                      workspace2: .init(start: &workspaces.uint8, count: workspaces.uint8.count))
     }
     
     /// Get HOG descriptor from gray scale image.
@@ -231,22 +230,20 @@ public class HOGDescriptor {
                               height: Int,
                               descriptor: UnsafeMutableBufferPointer<Double>,
                               workspace1: UnsafeMutableBufferPointer<Double>,
-                              workspace2: UnsafeMutableBufferPointer<Int8>) {
+                              workspace2: UnsafeMutableBufferPointer<UInt8>) {
         let workspaceSize = getWorkspaceSizes(width: width, height: height)
         let descriptorSize = getDescriptorSize(width: width, height: height)
         
         precondition(data.count == width*height)
         precondition(descriptor.count >= descriptorSize)
         precondition(workspace1.count >= workspaceSize.double)
-        precondition(workspace2.count >= workspaceSize.int8)
-        
-        let gradSize = width*height
+        precondition(workspace2.count >= workspaceSize.uint8)
         
         // 0 clear
         memset(workspace1.baseAddress!, 0, workspaceSize.double*MemoryLayout<Double>.size)
         
         // differentiate
-        
+        let gradSize = width*height
         let gradY = UnsafeMutableBufferPointer(rebasing: workspace1[start: gradSize, count: gradSize])
         let gradX = UnsafeMutableBufferPointer(rebasing: workspace1[start: gradSize*2, count: gradSize])
         differentiate(data: data, width: width, height: height, gradX: gradX, gradY: gradY)
@@ -265,7 +262,7 @@ public class HOGDescriptor {
                         &multiplier, &adder,
                         gradD.baseAddress!, 1,
                         UInt(gradSize)) // [0, 2*orientation]
-            vDSP_vfix8D(gradD.baseAddress!, 1, grad.baseAddress!, 1, UInt(gradSize))
+            vDSP_vfixu8D(gradD.baseAddress!, 1, grad.baseAddress!, 1, UInt(gradSize))
         }
         
         // Calculate magnitudes
