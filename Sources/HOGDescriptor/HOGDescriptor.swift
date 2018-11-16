@@ -106,22 +106,22 @@ public class HOGDescriptor {
     public func getDescriptor(data: UnsafeBufferPointer<Double>,
                               width: Int,
                               height: Int) -> [Double] {
-        let doubleImage: UnsafeBufferPointer<Double>
-        if transformSqrt {
-            var transformed = [Double](repeating: 0, count: width*height)
-            var count = Int32(transformed.count)
-            vvsqrt(&transformed, data.baseAddress!, &count)
-            doubleImage = UnsafeBufferPointer(start: transformed, count: transformed.count)
-        } else {
-            doubleImage = data
-        }
-        
         var descriptor = [Double](repeating: 0, count: getDescriptorSize(width: width, height: height))
         var workspace = [Double](repeating: 0, count: getWorkspaceSize(width: width, height: height))
         descriptor.withUnsafeMutableBufferPointer { descriptor in
             workspace.withUnsafeMutableBufferPointer { workspace in
-                getDescriptor(data: doubleImage, width: width, height: height,
-                              output: descriptor, workspace: workspace)
+                if transformSqrt {
+                    var transformed = [Double](repeating: 0, count: data.count)
+                    var count = Int32(transformed.count)
+                    vvsqrt(&transformed, data.baseAddress!, &count)
+                    transformed.withUnsafeBufferPointer {
+                        getDescriptor(data: $0, width: width, height: height,
+                                      output: descriptor, workspace: workspace)
+                    }
+                } else {
+                    getDescriptor(data: data, width: width, height: height,
+                                  output: descriptor, workspace: workspace)
+                }
             }
         }
         
