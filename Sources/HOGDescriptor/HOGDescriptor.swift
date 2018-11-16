@@ -291,11 +291,12 @@ public class HOGDescriptor {
                 let histogramHead = UnsafeMutableBufferPointer(rebasing: histograms[headIndex...])
                 for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
                     for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
-                        var directionIndex = Int(grad[y*width+x])
+                        let index = y*width + x
+                        var directionIndex = Int(grad[index])
                         while directionIndex >= orientations {
                             directionIndex -= orientations
                         }
-                        histogramHead[directionIndex] += magnitude[y*width+x]
+                        histogramHead[directionIndex] += magnitude[index]
                     }
                 }
             }
