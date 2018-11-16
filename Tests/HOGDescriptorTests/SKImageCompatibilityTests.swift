@@ -131,19 +131,6 @@ class SKImageCompatibilityTests: XCTestCase {
         XCTAssertEqual(f, size_16_16_ori_9_ppc_4_4_bpc_3_3_L2_Hys, accuracy: eps)
     }
     
-    func testAstronautGradXY() throws {
-        let astro = try loadAstronautGray()
-        let hogDescriptor = HOGDescriptor(orientations: 9,
-                                          pixelsPerCell: (8, 8),
-                                          cellsPerBlock: (3, 3),
-                                          normalization: .l1)
-        
-        let (gradX, gradY) = hogDescriptor.derivate(data: astro, width: 512, height: 512)
-        
-        XCTAssertEqual(gradX, try! loadAstronautGradX())
-        XCTAssertEqual(gradY, try! loadAstronautGradY())
-    }
-    
     func testAstronautL1() throws {
         let astro = try loadAstronautGray()
         

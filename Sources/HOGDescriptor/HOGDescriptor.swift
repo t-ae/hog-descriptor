@@ -65,6 +65,23 @@ public class HOGDescriptor {
         return numberOfBlocksY*numberOfBlocksX*cellsPerBlock.y*cellsPerBlock.x*orientations
     }
     
+    public func getWorkspaceSize(width: Int, height: Int) -> Int {
+        let numberOfCellX = width / pixelsPerCell.x
+        let numberOfCellY = height / pixelsPerCell.y
+        
+        let gradSize = width*height
+        // gradSize == gradXSize == gradYSize == magnitudeSize
+        
+        let histogramsSize = numberOfCellY*numberOfCellX*orientations
+        
+        // 1. [empty, gradY, gradX]
+        // 2. [grad, gradY, gradX]
+        // 3. [grad, magnitude, gradX]
+        // 4. [grad, magnitude, histograms]
+        
+        return max(3*gradSize, 2*gradSize + histogramsSize)
+    }
+    
     /// Get HOG descriptor from gray scale image.
     /// - Parameters:
     ///   - data: Head of pixel values of gray scale image, row major order.
@@ -74,14 +91,19 @@ public class HOGDescriptor {
     public func getDescriptor(data: UnsafePointer<Double>,
                               width: Int,
                               height: Int) -> [Double] {
+        var descriptor = [Double](repeating: 0, count: getDescriptorSize(width: width, height: height))
+        var workspace = [Double](repeating: 0, count: getWorkspaceSize(width: width, height: height))
         if transformSqrt {
             var transformed = [Double](repeating: 0, count: width*height)
             var count = Int32(transformed.count)
             vvsqrt(&transformed, data, &count)
-            return _getDescriptor(data: transformed, width: width, height: height)
+            _getDescriptor(data: transformed, width: width, height: height,
+                           output: &descriptor, workspace: &workspace)
         } else {
-            return _getDescriptor(data: data, width: width, height: height)
+            _getDescriptor(data: data, width: width, height: height,
+                           output: &descriptor, workspace: &workspace)
         }
+        return descriptor
     }
     
     /// Get HOG descriptor from gray scale image.
@@ -97,20 +119,28 @@ public class HOGDescriptor {
             var count = Int32(doubleImage.count)
             vvsqrt(&doubleImage, doubleImage, &count)
         }
-        return _getDescriptor(data: doubleImage, width: width, height: height)
+        var descriptor = [Double](repeating: 0, count: getDescriptorSize(width: width, height: height))
+        var workspace = [Double](repeating: 0, count: getWorkspaceSize(width: width, height: height))
+        _getDescriptor(data: doubleImage, width: width, height: height,
+                       output: &descriptor, workspace: &workspace)
+        
+        return descriptor
     }
     
-    func derivate(data: UnsafePointer<Double>, width: Int, height: Int) -> (x: [Double], y: [Double]) {
+    func derivate(data: UnsafePointer<Double>,
+                  width: Int,
+                  height: Int,
+                  gradX: UnsafeMutablePointer<Double>,
+                  gradY: UnsafeMutablePointer<Double>) {
         // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hog.py#L23-L44
         
-        var gradX = [Double](repeating: 0, count: width*height)
-        gradX.withUnsafeMutableBufferPointer {
-            let xImgPtr = $0.baseAddress!
-            
+        // [empty, gradY, gradX]
+        do {
             var dpLeft = data
             var dpRight = data.advanced(by: 2)
-            var dst = xImgPtr.advanced(by: 1)
+            var dst = gradX.advanced(by: 1)
             for _ in 0..<height {
+                dst.advanced(by: -1).pointee = 0
                 vDSP_vsubD(dpLeft, 1, dpRight, 1, dst, 1, UInt(width-2))
                 
                 dpLeft += width
@@ -119,18 +149,13 @@ public class HOGDescriptor {
             }
         }
         
-        var gradY = [Double](repeating: 0, count: width*height)
-        gradY.withUnsafeMutableBufferPointer {
-            let yImgPtr = $0.baseAddress!
-            
+        do {
             let dpUp = data
             let dpDown = data.advanced(by: 2*width)
-            let dst = yImgPtr.advanced(by: width)
+            let dst = gradY.advanced(by: width)
             
             vDSP_vsubD(dpUp, 1, dpDown, 1, dst, 1, UInt(width*(height-2)))
         }
-        
-        return (gradX, gradY)
     }
     
     func normalize(histograms: UnsafePointer<Double>,
@@ -194,41 +219,53 @@ public class HOGDescriptor {
     
     public func _getDescriptor(data: UnsafePointer<Double>,
                                width: Int,
-                               height: Int) -> [Double] {
+                               height: Int,
+                               output: UnsafeMutablePointer<Double>,
+                               workspace: UnsafeMutablePointer<Double>) {
+        // 0 clear
+        let workspaceSize = getWorkspaceSize(width: width, height: height)
+        memset(workspace, 0, workspaceSize*MemoryLayout<Double>.size)
         
         let numberOfCells = (x: width / pixelsPerCell.x, y: height / pixelsPerCell.y)
         
+        let gradSize = width*height
+        
         // derivatives
-        let (gradX, gradY) = derivate(data: data, width: width, height: height)
+        let gradY = workspace + gradSize
+        let gradX = gradY + gradSize
+        derivate(data: data, width: width, height: height, gradX: gradX, gradY: gradY)
         
         // calculate gradient directions and magnitudes
-        var grad = [Double](repeating: 0, count: gradX.count)
+        let grad = workspace
         do {
-            var _cnt = Int32(grad.count)
-            vvatan2(&grad, gradY, gradX, &_cnt) // [-pi, pi]
+            var _cnt = Int32(gradSize)
+            vvatan2(grad, gradY, gradX, &_cnt) // [-pi, pi]
             var multiplier = Double(orientations) / .pi
             var adder = Double(orientations)
-            vDSP_vsmsaD(grad, 1, &multiplier, &adder, &grad, 1, UInt(grad.count)) // [0, 2*orientation]
+            vDSP_vsmsaD(grad, 1, &multiplier, &adder, grad, 1, UInt(gradSize)) // [0, 2*orientation]
         }
         
-        var magnitude = [Double](repeating: 0, count: gradX.count)
-        vDSP_vdistD(gradX, 1, gradY, 1, &magnitude, 1, UInt(magnitude.count))
+        let magnitude = workspace + gradSize
+        vDSP_vdistD(gradY, 1, gradX, 1, magnitude, 1, UInt(gradSize))
+        
         
         // accumulate to histograms
         
         // N-D array of [numberOfCells.y, numberOfCells.x, orientations]
-        var histograms = [Double](repeating: 0, count: numberOfCells.y*numberOfCells.x*orientations)
+        let histograms = workspace + 2*gradSize
+        let histogramsSize = numberOfCells.y * numberOfCells.x * orientations
+        memset(histograms, 0, histogramsSize*MemoryLayout<Double>.size)
         
         for cellY in 0..<numberOfCells.y {
             for cellX in 0..<numberOfCells.x {
-                let histogramIndex = (cellY * numberOfCells.x + cellX) * orientations
+                let histogramHead = histograms + (cellY * numberOfCells.x + cellX) * orientations
                 for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
                     for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
                         var directionIndex = Int(grad[y*width+x])
                         while directionIndex >= orientations {
                             directionIndex -= orientations
                         }
-                        histograms[histogramIndex + directionIndex] += magnitude[y*width+x]
+                        histogramHead[directionIndex] += magnitude[y*width+x]
                     }
                 }
             }
@@ -239,20 +276,25 @@ public class HOGDescriptor {
         // Basically it's helpful only for visualization.
         // But, since we add `eps` while normalization, the result will have slight differences from skimage's without this.
         var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
-        vDSP_vsdivD(histograms, 1, &divisor, &histograms, 1, UInt(histograms.count))
+        vDSP_vsdivD(histograms, 1, &divisor, histograms, 1, UInt(histogramsSize))
         
         // normalize
         let numberOfBlocks = (x: numberOfCells.x - cellsPerBlock.x + 1,
                               y: numberOfCells.y - cellsPerBlock.y + 1)
         
-        let featureCount = numberOfBlocks.y*numberOfBlocks.x*cellsPerBlock.y*cellsPerBlock.x*orientations
         // N-D array of [numberOfBlocks.y, numberOfBlocks.x, cellsPerBlock.y, cellsPerBlock.x, orientations]
-        var blocks = [Double](repeating: 0, count: featureCount)
-        
         normalize(histograms: histograms, numberOfCells: numberOfCells,
-                  blocks: &blocks, numberOfBlocks: numberOfBlocks)
+                  blocks: output, numberOfBlocks: numberOfBlocks)
+    }
+    
+    private func dumpWorkspace(_ workspace: UnsafePointer<Double>, width: Int, height: Int) {
+        let block1 = [Double](UnsafeBufferPointer(start: workspace, count: width*height))
+        let block2 = [Double](UnsafeBufferPointer(start: workspace + width*height, count: width*height))
+        let block3 = [Double](UnsafeBufferPointer(start: workspace + 2*width*height, count: getWorkspaceSize(width: width, height: height) - 2*width*height))
         
-        return blocks
+        print(block1)
+        print(block2)
+        print(block3)
     }
 }
 
