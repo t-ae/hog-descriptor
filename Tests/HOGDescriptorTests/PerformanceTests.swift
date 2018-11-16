@@ -23,17 +23,15 @@ class PerformanceTests: XCTestCase {
         let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 8, blockSpan: 3, normalization: .l1)
         
         var output = [Double](repeating: 0, count: hogDescriptor.getDescriptorSize(width: width, height: height))
-        var workspace = [Double](repeating: 0, count: hogDescriptor.getWorkspaceSize(width: width, height: height))
+        var workspaces = hogDescriptor.createWorkspaces(width: width, height: height)
         
         measure {
             for _ in 0..<iterations {
-                _ = image.withUnsafeBufferPointer { image in
-                    output.withUnsafeMutableBufferPointer { output in
-                        workspace.withUnsafeMutableBufferPointer { workspace in
-                            hogDescriptor.getDescriptor(data: image, width: width, height: height, descriptor: output, workspace: workspace)
-                        }
-                    }
-                }
+                _ = hogDescriptor.getDescriptor(data: .init(start: image, count: image.count),
+                                                width: width,
+                                                height: height,
+                                                descriptor: .init(start: &output, count: output.count),
+                                                workspaces: &workspaces)
             }
         }
     }
