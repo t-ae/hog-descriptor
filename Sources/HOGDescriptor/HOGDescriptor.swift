@@ -77,10 +77,10 @@ public class HOGDescriptor {
         
         // 1. [empty, gradY, gradX]
         // 2. [grad, gradY, gradX]
-        // 3. [grad, magnitude, gradX]
-        // 4. [grad, magnitude, histograms]
+        // 3. [magnitude, gradY, grad]
+        // 4. [magnitude, histograms]
         
-        return max(3*gradSize, 2*gradSize + histogramsSize)
+        return max(3*gradSize, gradSize + histogramsSize)
     }
     
     /// Get HOG descriptor from gray scale image.
@@ -201,26 +201,31 @@ public class HOGDescriptor {
         // 0 clear
         memset(workspace.baseAddress!, 0, workspaceSize*MemoryLayout<Double>.size)
         
-        // derivatives
+        // differentiate
         let gradSize = width*height
         let gradY = UnsafeMutableBufferPointer(rebasing: workspace[start: gradSize, count: gradSize])
         let gradX = UnsafeMutableBufferPointer(rebasing: workspace[start: gradSize*2, count: gradSize])
         differentiate(data: data, width: width, height: height, gradX: gradX, gradY: gradY)
         
-        // calculate gradient directions and magnitudes
-        let grad = UnsafeMutableBufferPointer(rebasing: workspace[start: 0, count: gradSize])
+        // Calculate gradient directions
+        // These will be casted to Int while histogram step.
+        // But precasting with vDSP is a bit faster.
+        var grad = [Int8](repeating: 0, count: gradSize)
         do {
+            let gradD = UnsafeMutableBufferPointer(rebasing: workspace[start: 0, count: gradSize])
             var _cnt = Int32(gradSize)
-            vvatan2(grad.baseAddress!, gradY.baseAddress!, gradX.baseAddress!, &_cnt) // [-pi, pi]
+            vvatan2(gradD.baseAddress!, gradY.baseAddress!, gradX.baseAddress!, &_cnt) // [-pi, pi]
             var multiplier = Double(orientations) / .pi
             var adder = Double(orientations)
-            vDSP_vsmsaD(grad.baseAddress!, 1,
+            vDSP_vsmsaD(gradD.baseAddress!, 1,
                         &multiplier, &adder,
-                        grad.baseAddress!, 1,
+                        gradD.baseAddress!, 1,
                         UInt(gradSize)) // [0, 2*orientation]
+            vDSP_vfix8D(gradD.baseAddress!, 1, &grad, 1, UInt(gradSize))
         }
         
-        let magnitude = UnsafeMutableBufferPointer(rebasing: workspace[start: gradSize, count: gradSize])
+        // Calculate magnitudes
+        let magnitude = UnsafeMutableBufferPointer(rebasing: workspace[start: 0, count: gradSize])
         vDSP_vdistD(gradY.baseAddress!, 1,
                     gradX.baseAddress!, 1,
                     magnitude.baseAddress!, 1,
@@ -232,7 +237,7 @@ public class HOGDescriptor {
         // N-D array of [numberOfCells.y, numberOfCells.x, orientations]
         let numberOfCells = (x: width / pixelsPerCell.x, y: height / pixelsPerCell.y)
         let histogramsSize = numberOfCells.y * numberOfCells.x * orientations
-        let histograms = UnsafeMutableBufferPointer(rebasing: workspace[start: (gradSize*2),
+        let histograms = UnsafeMutableBufferPointer(rebasing: workspace[start: gradSize,
                                                                         count: histogramsSize])
         
         // 0 clear
