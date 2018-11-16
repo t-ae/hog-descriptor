@@ -23,6 +23,7 @@
 /* Begin PBXBuildFile section */
 		A76499C9219BF0D000D65CA6 /* AstronautGray.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73480B7219BE7AD004C00E7 /* AstronautGray.swift */; };
 		A76499EE219E7C9300D65CA6 /* PerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76499ED219E7C9300D65CA6 /* PerformanceTests.swift */; };
+		A76499F1219EB03D00D65CA6 /* VotePerformaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76499F0219EB03D00D65CA6 /* VotePerformaceTests.swift */; };
 		OBJ_36 /* HOGDescriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* HOGDescriptor.swift */; };
 		OBJ_43 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
 		OBJ_54 /* HOGDescriptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* HOGDescriptorTests.swift */; };
@@ -63,6 +64,7 @@
 /* Begin PBXFileReference section */
 		A73480B7219BE7AD004C00E7 /* AstronautGray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AstronautGray.swift; sourceTree = "<group>"; };
 		A76499ED219E7C9300D65CA6 /* PerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceTests.swift; sourceTree = "<group>"; };
+		A76499F0219EB03D00D65CA6 /* VotePerformaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotePerformaceTests.swift; sourceTree = "<group>"; };
 		"HOGDescriptor::HOGDescriptor::Product" /* HOGDescriptor.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = HOGDescriptor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"HOGDescriptor::HOGDescriptorTests::Product" /* HOGDescriptorTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = HOGDescriptorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_12 /* HOGDescriptorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HOGDescriptorTests.swift; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 				OBJ_26 /* XCTAssert+Array.swift */,
 				OBJ_27 /* XCTestManifests.swift */,
 				A76499ED219E7C9300D65CA6 /* PerformanceTests.swift */,
+				A76499F0219EB03D00D65CA6 /* VotePerformaceTests.swift */,
 			);
 			name = HOGDescriptorTests;
 			path = Tests/HOGDescriptorTests;
@@ -288,6 +291,7 @@
 				OBJ_59 /* D.swift in Sources */,
 				OBJ_60 /* E.swift in Sources */,
 				OBJ_61 /* F.swift in Sources */,
+				A76499F1219EB03D00D65CA6 /* VotePerformaceTests.swift in Sources */,
 				OBJ_62 /* G.swift in Sources */,
 				A76499C9219BF0D000D65CA6 /* AstronautGray.swift in Sources */,
 				OBJ_63 /* H.swift in Sources */,

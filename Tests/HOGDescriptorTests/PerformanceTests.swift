@@ -1,5 +1,6 @@
 import XCTest
 import HOGDescriptor
+import Accelerate
 
 class PerformanceTests: XCTestCase {
     
