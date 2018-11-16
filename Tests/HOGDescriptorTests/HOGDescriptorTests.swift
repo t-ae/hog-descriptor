@@ -1,7 +1,7 @@
 import XCTest
 import HOGDescriptor
 
-final class HOGFeaturehogDescriptorTests: XCTestCase {
+final class HOGDescriptorTests: XCTestCase {
     func testGetSize() {
         do {
             let width = 16
