@@ -200,7 +200,7 @@ public class HOGDescriptor {
         let gradSize = width*height
         let gradY = UnsafeMutableBufferPointer(rebasing: workspace[gradSize...])
         let gradX = UnsafeMutableBufferPointer(rebasing: gradY[gradSize...])
-        derivate(data: data, width: width, height: height, gradX: gradX, gradY: gradY)
+        differentiate(data: data, width: width, height: height, gradX: gradX, gradY: gradY)
         
         // calculate gradient directions and magnitudes
         let grad = workspace
@@ -265,11 +265,12 @@ public class HOGDescriptor {
                   numberOfBlocks: numberOfBlocks)
     }
     
-    func derivate(data: UnsafeBufferPointer<Double>,
-                  width: Int,
-                  height: Int,
-                  gradX: UnsafeMutableBufferPointer<Double>,
-                  gradY: UnsafeMutableBufferPointer<Double>) {
+    /// Calculate vertical/horizontal differentials.
+    func differentiate(data: UnsafeBufferPointer<Double>,
+                       width: Int,
+                       height: Int,
+                       gradX: UnsafeMutableBufferPointer<Double>,
+                       gradY: UnsafeMutableBufferPointer<Double>) {
         // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hog.py#L23-L44
         
         // [empty, gradY, gradX]
@@ -296,6 +297,7 @@ public class HOGDescriptor {
         }
     }
     
+    /// Copy and Normalize blocks.
     func normalize(histograms: UnsafeBufferPointer<Double>,
                    numberOfCells: (x: Int, y: Int),
                    blocks: UnsafeMutableBufferPointer<Double>,
@@ -365,6 +367,7 @@ public class HOGDescriptor {
         }
     }
     
+    /// Dump workspace blocks.
     private func dumpWorkspace(_ workspace: UnsafePointer<Double>, width: Int, height: Int) {
         let block1 = [Double](UnsafeBufferPointer(start: workspace, count: width*height))
         let block2 = [Double](UnsafeBufferPointer(start: workspace + width*height, count: width*height))
