@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		A734C2AA21A261B800268A1D /* HistogramPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A734C2A921A261B800268A1D /* HistogramPerformanceTests.swift */; };
 		A76499C9219BF0D000D65CA6 /* AstronautGray.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73480B7219BE7AD004C00E7 /* AstronautGray.swift */; };
 		A76499EE219E7C9300D65CA6 /* PerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76499ED219E7C9300D65CA6 /* PerformanceTests.swift */; };
 		A76499F1219EB03D00D65CA6 /* VotePerformaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76499F0219EB03D00D65CA6 /* VotePerformaceTests.swift */; };
@@ -63,6 +64,7 @@
 
 /* Begin PBXFileReference section */
 		A73480B7219BE7AD004C00E7 /* AstronautGray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AstronautGray.swift; sourceTree = "<group>"; };
+		A734C2A921A261B800268A1D /* HistogramPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistogramPerformanceTests.swift; sourceTree = "<group>"; };
 		A76499ED219E7C9300D65CA6 /* PerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceTests.swift; sourceTree = "<group>"; };
 		A76499F0219EB03D00D65CA6 /* VotePerformaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotePerformaceTests.swift; sourceTree = "<group>"; };
 		"HOGDescriptor::HOGDescriptor::Product" /* HOGDescriptor.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = HOGDescriptor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -123,6 +125,7 @@
 				OBJ_27 /* XCTestManifests.swift */,
 				A76499ED219E7C9300D65CA6 /* PerformanceTests.swift */,
 				A76499F0219EB03D00D65CA6 /* VotePerformaceTests.swift */,
+				A734C2A921A261B800268A1D /* HistogramPerformanceTests.swift */,
 			);
 			name = HOGDescriptorTests;
 			path = Tests/HOGDescriptorTests;
@@ -284,6 +287,7 @@
 			files = (
 				OBJ_54 /* HOGDescriptorTests.swift in Sources */,
 				OBJ_55 /* SKImageCompatibilityTests.swift in Sources */,
+				A734C2AA21A261B800268A1D /* HistogramPerformanceTests.swift in Sources */,
 				A76499EE219E7C9300D65CA6 /* PerformanceTests.swift in Sources */,
 				OBJ_56 /* A.swift in Sources */,
 				OBJ_57 /* B.swift in Sources */,
