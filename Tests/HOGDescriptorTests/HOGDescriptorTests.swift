@@ -24,12 +24,13 @@ final class HOGDescriptorTests: XCTestCase {
                            hogDescriptor.getDescriptor(data: image, width: width, height: height).count)
         }
     }
+    
     func testScaleInvariance() {
+        let image1 = (0..<64*64).map { _ in Double(UInt8.random(in: 0...255)) }
+        let image2 = image1.map { Double($0)/255 }
+        
         do {
             let hogDescriptor = HOGDescriptor(orientations: 9, cellSpan: 3, blockSpan: 4, normalization: .l1)
-            
-            let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
-            let image2 = image1.map { Double($0)/255 }
             
             let f1 = hogDescriptor.getDescriptor(data: image1, width: 64, height: 64)
             let f2 = hogDescriptor.getDescriptor(data: image2, width: 64, height: 64)
@@ -43,9 +44,6 @@ final class HOGDescriptorTests: XCTestCase {
                                               normalization: .l1,
                                               transformSqrt: true)
             
-            let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
-            let image2 = image1.map { Double($0)/255 }
-            
             let f1 = hogDescriptor.getDescriptor(data: image1, width: 64, height: 64)
             let f2 = hogDescriptor.getDescriptor(data: image2, width: 64, height: 64)
             
@@ -53,9 +51,6 @@ final class HOGDescriptorTests: XCTestCase {
         }
         do {
             let hogDescriptor = HOGDescriptor(orientations: 5, cellSpan: 8, blockSpan: 4, normalization: .l1sqrt)
-            
-            let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
-            let image2 = image1.map { Double($0)/255 }
             
             let f1 = hogDescriptor.getDescriptor(data: image1, width: 64, height: 64)
             let f2 = hogDescriptor.getDescriptor(data: image2, width: 64, height: 64)
@@ -65,9 +60,6 @@ final class HOGDescriptorTests: XCTestCase {
         do {
             let hogDescriptor = HOGDescriptor(orientations: 5, cellSpan: 8, blockSpan: 4, normalization: .l2)
             
-            let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
-            let image2 = image1.map { Double($0)/255 }
-            
             let f1 = hogDescriptor.getDescriptor(data: image1, width: 64, height: 64)
             let f2 = hogDescriptor.getDescriptor(data: image2, width: 64, height: 64)
             
@@ -75,9 +67,6 @@ final class HOGDescriptorTests: XCTestCase {
         }
         do {
             let hogDescriptor = HOGDescriptor(orientations: 5, cellSpan: 8, blockSpan: 4, normalization: .l2Hys)
-            
-            let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
-            let image2 = image1.map { Double($0)/255 }
             
             let f1 = hogDescriptor.getDescriptor(data: image1, width: 64, height: 64)
             let f2 = hogDescriptor.getDescriptor(data: image2, width: 64, height: 64)
