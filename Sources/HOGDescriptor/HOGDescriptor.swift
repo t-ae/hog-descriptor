@@ -5,7 +5,6 @@ public class HOGDescriptor {
     
     public enum NormalizationMethod {
         case l1, l1sqrt, l2, l2Hys
-        case none // for debug
     }
     
     public let pixelsPerCell: (x: Int, y: Int)
@@ -14,8 +13,6 @@ public class HOGDescriptor {
     
     public let normalization: NormalizationMethod
     public let transformSqrt: Bool
-    
-    public let orientationsLookupTable: [Int]
     
     public let eps = 1e-5
     
@@ -39,21 +36,6 @@ public class HOGDescriptor {
         self.orientations = orientations
         self.normalization = normalization
         self.transformSqrt = transformSqrt
-        
-        // construct atan2 lookup table
-        var table = [Int](repeating: 0, count: 512*512)
-        for y in -255...255 {
-            let yy = (y+255)<<9
-            for x in -255...255 {
-                let grad = atan2(Double(y), Double(x))
-                var index = Int((grad / .pi + 1) * Double(orientations))
-                while index >= orientations {
-                    index -= orientations
-                }
-                table[yy | (x+255)] = index
-            }
-        }
-        self.orientationsLookupTable = table
     }
     
     /// Create HOGDescriptor with square cells/blocks.
@@ -342,92 +324,6 @@ public class HOGDescriptor {
                   numberOfBlocks: numberOfBlocks)
     }
     
-    /// Get HOG descriptor from UInt8 gray scale image.
-    /// 
-    /// - Parameters:
-    ///   - data: Head of pixel values of gray scale image, row major order.
-    ///   - width: Width of image.
-    ///   - height: Height of image.
-    ///   - descriptor: output of HOG descriptor.
-    ///   - workspace1: Double workspace.
-    ///   - workspace2: UInt8 workspace.
-    /// - Precondition:
-    ///   - data.count == width*height
-    ///   - output.count >= getDescriptorSize(width: width, height: height)
-    ///   - workspace.count >= getWorkspaceSize(width: width, height: height).double
-    public func getDescriptor(data: UnsafeBufferPointer<UInt8>,
-                              width: Int,
-                              height: Int,
-                              descriptor: UnsafeMutableBufferPointer<Double>,
-                              workspace: UnsafeMutableBufferPointer<Double>) {
-        let descriptorSize = getDescriptorSize(width: width, height: height)
-        
-        // N-D array of [numberOfCells.y, numberOfCells.x, orientations]
-        let numberOfCells = (x: width / pixelsPerCell.x, y: height / pixelsPerCell.y)
-        let histogramsSize = numberOfCells.y * numberOfCells.x * orientations
-        let histograms = UnsafeMutableBufferPointer(rebasing: workspace[start: width*height,
-                                                                        count: histogramsSize])
-        for cellY in 0..<numberOfCells.y {
-            for cellX in 0..<numberOfCells.x {
-                let headIndex = (cellY * numberOfCells.x + cellX) * orientations
-                let histogramHead = UnsafeMutableBufferPointer(rebasing: histograms[headIndex...])
-                for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
-                    for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
-                        let index = y*width + x
-                        let gradX: Int
-                        if x == 0 || x == width-1 {
-                            gradX = 0
-                        } else {
-                            gradX = Int(data[index+1]) - Int(data[index-1])
-                        }
-                        
-                        let gradY: Int
-                        if y == 0 || y == height-1 {
-                            gradY = 0
-                        } else {
-                            gradY = Int(data[index+width]) - Int(data[index-width])
-                        }
-                        
-                        let directionIndex = orientationsLookupTable[(gradY+255)<<9 | (gradX+255)]
-                        let grad = atan2(Double(gradY), Double(gradX))
-                        var i = Int((grad / .pi + 1) * Double(orientations))
-                        while i >= orientations {
-                            i -= orientations
-                        }
-                        if i != directionIndex {
-                            print(i, directionIndex)
-                        }
-
-                        let magnitude = hypot(Double(gradY), Double(gradX))
-    
-                        histogramHead[directionIndex] += magnitude
-                    }
-                }
-            }
-        }
-        
-        // Scale histograms
-        // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
-        // Basically it's helpful only for visualization.
-        // But, since we add `eps` while normalization, the result will have slight differences from skimage's without this.
-        var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
-        vDSP_vsdivD(histograms.baseAddress!, 1,
-                    &divisor,
-                    histograms.baseAddress!, 1,
-                    UInt(histogramsSize))
-        
-        // normalize
-        let numberOfBlocks = (x: numberOfCells.x - cellsPerBlock.x + 1,
-                              y: numberOfCells.y - cellsPerBlock.y + 1)
-        
-        // N-D array of [numberOfBlocks.y, numberOfBlocks.x, cellsPerBlock.y, cellsPerBlock.x, orientations]
-        
-        normalize(histograms: UnsafeBufferPointer(histograms),
-                  numberOfCells: numberOfCells,
-                  blocks: .init(rebasing: descriptor[..<descriptorSize]),
-                  numberOfBlocks: numberOfBlocks)
-    }
-    
     /// Calculate vertical/horizontal differentials.
     func differentiate(data: UnsafeBufferPointer<Double>,
                        width: Int,
@@ -529,8 +425,6 @@ public class HOGDescriptor {
                     vDSP_vsdivD(blockHead.baseAddress!, 1, &sum,
                                 blockHead.baseAddress!, 1,
                                 UInt(blockSize))
-                case .none:
-                    break
                 }
                 
                 blockHead = UnsafeMutableBufferPointer(rebasing: blockHead[blockSize...])

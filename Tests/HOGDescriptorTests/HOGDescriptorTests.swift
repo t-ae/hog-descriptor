@@ -75,23 +75,6 @@ final class HOGDescriptorTests: XCTestCase {
         }
     }
     
-    func testDoubleImplAndUInt8ImplEquity() {
-        let image1 = (0..<64*64).map { _ in UInt8.random(in: 0...255) }
-        
-        let des = HOGDescriptor(orientations: 9, normalization: .l1)
-        let double = des.getDescriptor(data: image1, width: 64, height: 64)
-        var uint = [Double](repeating: 0, count: double.count)
-        var workspace = des.createWorkspaces(width: 64, height: 64)
-        image1.withUnsafeBufferPointer { image1 in
-            uint.withUnsafeMutableBufferPointer { uint in
-                workspace.double.withUnsafeMutableBufferPointer { ws in
-                    des.getDescriptor(data: image1, width: 64, height: 64, descriptor: uint, workspace: ws)
-                }
-            }
-        }
-        
-        XCTAssertEqual(double, uint, accuracy: 1e-6)
-    }
     
     static var allTests = [
         ("testScaleInvariance", testScaleInvariance),
