@@ -334,15 +334,17 @@ public class HOGDescriptor {
         
         assert(gradX.count == width*height)
         assert(gradY.count == width*height)
+        assert(gradX.allSatisfy { $0 == 0 })
+        assert(gradY.allSatisfy { $0 == 0 })
         
         do {
             var dpLeft = data.baseAddress!
             var dpRight = data.baseAddress!.advanced(by: 2)
             var dst = gradX.baseAddress!.advanced(by: 1)
+            
             for _ in 0..<height {
-                dst.advanced(by: -1).pointee = 0
                 vDSP_vsubD(dpLeft, 1, dpRight, 1, dst, 1, UInt(width-2))
-                
+
                 dpLeft += width
                 dpRight += width
                 dst += width
