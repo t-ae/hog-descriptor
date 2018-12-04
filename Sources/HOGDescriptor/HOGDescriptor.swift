@@ -286,10 +286,11 @@ public class HOGDescriptor {
         
         // weighted vote
         for cellY in 0..<numberOfCells.y {
-            for cellX in 0..<numberOfCells.x {
-                let headIndex = (cellY * numberOfCells.x + cellX) * orientations
-                let histogramHead = UnsafeMutableBufferPointer(rebasing: histograms[headIndex...])
-                for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
+            for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
+                for cellX in 0..<numberOfCells.x {
+                    let headIndex = (cellY * numberOfCells.x + cellX) * orientations
+                    let histogramHead = UnsafeMutableBufferPointer(rebasing: histograms[headIndex...])
+
                     for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
                         let index = y*width + x
                         var directionIndex = Int(grad[index])
