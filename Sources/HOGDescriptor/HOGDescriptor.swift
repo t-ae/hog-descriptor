@@ -290,8 +290,9 @@ public class HOGDescriptor {
         
         // weighted vote
         for cellY in 0..<numberOfCells.y {
+            let headIndex = (cellY * numberOfCells.x) * orientations
+            
             for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
-                let headIndex = (cellY * numberOfCells.x) * orientations
                 var histogramHead = histograms.baseAddress! + headIndex
                 
                 var grad = grad.baseAddress! + y*width
