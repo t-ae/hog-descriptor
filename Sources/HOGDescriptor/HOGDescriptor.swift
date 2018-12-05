@@ -263,6 +263,9 @@ public class HOGDescriptor {
                         gradD.baseAddress!, 1,
                         UInt(gradSize)) // [0, 2*orientation]
             vDSP_vfixu8D(gradD.baseAddress!, 1, grad.baseAddress!, 1, UInt(gradSize))
+            for i in 0..<grad.count {
+                grad[i] %= UInt8(orientations)
+            }
         }
         
         // Calculate magnitudes
@@ -293,10 +296,7 @@ public class HOGDescriptor {
 
                     for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
                         let index = y*width + x
-                        var directionIndex = Int(grad[index])
-                        while directionIndex >= orientations {
-                            directionIndex -= orientations
-                        }
+                        let directionIndex = Int(grad[index])
                         histogramHead[directionIndex] += magnitude[index]
                     }
                 }
