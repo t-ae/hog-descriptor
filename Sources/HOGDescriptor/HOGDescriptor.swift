@@ -261,10 +261,11 @@ public class HOGDescriptor {
             vDSP_vsmsaD(gradD.baseAddress!, 1,
                         &multiplier, &adder,
                         gradD.baseAddress!, 1,
-                        UInt(gradSize)) // [0, 2*orientation]
+                        UInt(gradSize)) // [0, 2*orientations]
             vDSP_vfixu8D(gradD.baseAddress!, 1, grad.baseAddress!, 1, UInt(gradSize))
+            
             for i in 0..<grad.count {
-                grad[i] %= UInt8(orientations)
+                grad[i] %= UInt8(orientations) // [0, orientations)
             }
         }
         
@@ -282,7 +283,7 @@ public class HOGDescriptor {
         let numberOfCells = (x: width / pixelsPerCell.x, y: height / pixelsPerCell.y)
         let histogramsSize = numberOfCells.y * numberOfCells.x * orientations
         let histograms = UnsafeMutableBufferPointer(rebasing: workspace1[start: gradSize,
-                                                                        count: histogramsSize])
+                                                                         count: histogramsSize])
         
         // 0 clear
         memset(histograms.baseAddress!, 0, histogramsSize*MemoryLayout<Double>.size)
@@ -290,15 +291,21 @@ public class HOGDescriptor {
         // weighted vote
         for cellY in 0..<numberOfCells.y {
             for y in cellY*pixelsPerCell.y..<(cellY+1)*pixelsPerCell.y {
-                for cellX in 0..<numberOfCells.x {
-                    let headIndex = (cellY * numberOfCells.x + cellX) * orientations
-                    let histogramHead = UnsafeMutableBufferPointer(rebasing: histograms[headIndex...])
-
-                    for x in cellX*pixelsPerCell.x..<(cellX+1)*pixelsPerCell.x {
-                        let index = y*width + x
-                        let directionIndex = Int(grad[index])
-                        histogramHead[directionIndex] += magnitude[index]
+                let headIndex = (cellY * numberOfCells.x) * orientations
+                var histogramHead = histograms.baseAddress! + headIndex
+                
+                var grad = grad.baseAddress! + y*width
+                var magnitude = magnitude.baseAddress! + y*width
+                
+                for _ in 0..<numberOfCells.x { // cellX
+                    for _ in 0..<pixelsPerCell.x { // x
+                        let directionIndex = Int(grad.pointee)
+                        histogramHead[directionIndex] += magnitude.pointee
+                        
+                        grad += 1
+                        magnitude += 1
                     }
+                    histogramHead += orientations
                 }
             }
         }
