@@ -314,7 +314,7 @@ public class HOGDescriptor {
         // Scale histograms
         // https://github.com/scikit-image/scikit-image/blob/9c4632f43eb6f6e85bf33f9adf8627d01b024496/skimage/feature/_hoghistogram.pyx#L74
         // Basically it's helpful only for visualization.
-        // But, since we add `eps` while normalization, the result will have slight differences from skimage's without this.
+        // But, since we add `eps` while normalization, the result will slightly differ from skimage's without this.
         var divisor = Double(pixelsPerCell.y * pixelsPerCell.x)
         vDSP_vsdivD(histograms.baseAddress!, 1,
                     &divisor,
@@ -324,8 +324,6 @@ public class HOGDescriptor {
         // normalize
         let numberOfBlocks = (x: numberOfCells.x - cellsPerBlock.x + 1,
                               y: numberOfCells.y - cellsPerBlock.y + 1)
-        
-        // N-D array of [numberOfBlocks.y, numberOfBlocks.x, cellsPerBlock.y, cellsPerBlock.x, orientations]
         
         normalize(histograms: UnsafeBufferPointer(histograms),
                   numberOfCells: numberOfCells,
