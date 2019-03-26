@@ -26,4 +26,4 @@ Check [test.py](https://github.com/t-ae/hog-feature-extractor/blob/master/test.p
 
 ## License
 
-[The MIT License](https://github.com/t-ae/hog-feature-extractor/blob/master/LICENSE)
+[The MIT License](https://github.com/t-ae/hog-descriptor/blob/master/LICENSE)
